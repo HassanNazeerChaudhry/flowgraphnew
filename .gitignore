@@ -1,0 +1,7 @@
+/.idea/
+/flowgraph.iml
+/gen/
+/target/
+/generatedGraph.txt
+/log/
+/dataset*

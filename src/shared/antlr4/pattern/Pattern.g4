@@ -1,34 +1,18 @@
 grammar Pattern;
 patternEntry
-    :   (temporalPattern followedBy  temporalPattern ';')* EOF
+    :   temporalClause followedBy  temporalClause ';')* EOF
     ;
 
-temporalPattern
-    :   triggerComputation? graphProcessing emission? //Can emit Graph Variable only
-    |   triggerComputation? graphProcessing extractStreamProcessing
-    |   triggerComputation? collectStreamProcessing
 
+temporalClause
+    :   graphProcessing
     ;
-
-//.......................................................
 
 //.......................................................
 
 graphProcessing
-    :    '.g()' (computation | selection | partition)*
-    |    temporalVariable (computation | selection | partition)*
-    ;
-
-collectStreams
-    :   '.collect(' temporalVariable (',' temporalVariable)* ')'
-    ;
-
-extractStreamProcessing
-    :   extraction (operation)* (emission | evaluation)
-    ;
-
-collectStreamProcessing
-    :   (collectStreams | extraction) (operation)* (emission | evaluation)
+    :    '.g()' (computation | selection | partition|extraction)* (evaluation)
+    |    temporalVariable (computation | selection | partition|extraction)* (evaluation)
     ;
 
 computation
@@ -53,10 +37,6 @@ evaluation
     :   '.evaluate(' Operator ',' value ',' fireEvent ')'
     ;
 
-operation
-    :   operationFunction
-    ;
-
 computationFunction
     :   functionName ',' computationReturnVariables ( computationParameters )?
     ;
@@ -73,7 +53,7 @@ aliasedParameter
     :   Litterals '=' operands
     ;
 
-followedBy: '.followedBy(' ')';
+followedBy: '.followedBy('temporalVariable ')';
 
 //.......................................................
 
@@ -129,24 +109,6 @@ oneFieldOperationAlias
     :   '.avg' | '.max' | '.min' | '.count' | '.select'
     ;
 
-triggerComputation
-    :   triggerInput
-    |   triggerTemporal
-    |   triggerSensitivity
-    ;
-
-triggerInput
-    :   '.trigger(' ('edge' | 'vertex') ( 'addition' | 'deletion' | 'update' ) 'as' variable ('[' boolPredicate* ']')? ')'
-    ;
-
-triggerTemporal
-    :   '.trigger(' Timeunit ')'
-    ;
-
-triggerSensitivity
-    :   '.trigger(' variable (',' variable)* ')'
-    ;
-
 emission
     :   '.emit(' variable ')'
     ;
@@ -187,7 +149,22 @@ Operator : ('<'| '>'| '==' | '<=' | '>=') ;
 
 //BinBoolOperator : 'and' | 'or' ;
 NOT : 'not' ;
-AND : 'and' ;
+AND : 'and' ;grammar Pattern;
+
+
+//UnaryBoolOperator: 'not' ;
+
+DOT: '.';
+
+Litterals : ( [a-z] | [A-Z] | Number | DOT )+ ;
+
+Timeunit : (Number+ ('-ms' | '-s' | '-m' | '-h'))+ ;
+
+Number : [0-9] ;
+
+
+//for windows  [\t \r \n]+ -> skip, for linux [ \t\n]+ -> skip;
+Skip : [ \t\r\n]+ -> skip;
 OR : 'or' ;
 
 

@@ -1,18 +1,18 @@
 grammar Pattern;
 patternEntry
-    :   temporalClause followedBy  temporalClause ';')* EOF
+    :   temporalClause (followedBy  temporalClause)* ';' EOF
     ;
 
 
 temporalClause
-    :   graphProcessing
+    :   graphProcessing extraction (operation)* evaluation 
     ;
 
 //.......................................................
 
 graphProcessing
-    :    '.g()' (computation | selection | partition|extraction)* (evaluation)
-    |    temporalVariable (computation | selection | partition|extraction)* (evaluation)
+    :    '.g()' (computation | selection | partition)*
+    |    temporalVariable (computation | selection | partition)*
     ;
 
 computation

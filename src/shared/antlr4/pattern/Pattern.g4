@@ -5,7 +5,7 @@ patternEntry
 
 
 temporalClause
-    :   graphProcessing extraction (operation)* evaluation 
+    :   graphProcessing extraction (operationFunction)* evaluation
     ;
 
 //.......................................................
@@ -19,14 +19,19 @@ computation
     :   '.compute(' computationFunction ')'
     ;
 
+
 selection
     :   '.select(' selectionFunction ')'
     ;
+
 
 partition
     :   '.SubGraphByV(' partitionFunction ')'
     |   '.SubGraphByE(' partitionFunction ')'
     ;
+
+
+
 
 extraction
     :   '.extractV(' label? (',' label)* ')'
@@ -54,6 +59,8 @@ aliasedParameter
     ;
 
 followedBy: '.followedBy('temporalVariable ')';
+
+operation: ' ';
 
 //.......................................................
 
@@ -149,25 +156,9 @@ Operator : ('<'| '>'| '==' | '<=' | '>=') ;
 
 //BinBoolOperator : 'and' | 'or' ;
 NOT : 'not' ;
-AND : 'and' ;grammar Pattern;
-
-
-//UnaryBoolOperator: 'not' ;
-
-DOT: '.';
-
-Litterals : ( [a-z] | [A-Z] | Number | DOT )+ ;
-
-Timeunit : (Number+ ('-ms' | '-s' | '-m' | '-h'))+ ;
-
-Number : [0-9] ;
-
-
-//for windows  [\t \r \n]+ -> skip, for linux [ \t\n]+ -> skip;
-Skip : [ \t\r\n]+ -> skip;
+AND : 'and' ;
 OR : 'or' ;
 
-
 //UnaryBoolOperator: 'not' ;
 
 DOT: '.';
@@ -181,3 +172,6 @@ Number : [0-9] ;
 
 //for windows  [\t \r \n]+ -> skip, for linux [ \t\n]+ -> skip;
 Skip : [ \t\r\n]+ -> skip;
+
+
+

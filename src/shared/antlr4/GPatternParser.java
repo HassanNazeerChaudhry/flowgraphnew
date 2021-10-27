@@ -180,9 +180,6 @@ public class GPatternParser extends PatternBaseListener {
         this.patternElements.add(StreamParser.getStream(ctx, this.trigger, this.callback, transactionId));
     }
 
-    @Override
-    public void enterSequencePattern(PatternParser.SequencePatternContext ctx) {
-        this.patternElements.add(SequenceParser.getSequenceParser(ctx,this.trigger, this.callback));
-    }
+
 
 }

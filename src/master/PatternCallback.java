@@ -3,9 +3,7 @@ package master;
 import akka.actor.ActorRef;
 import akka.event.LoggingAdapter;
 import shared.patterns.Pattern;
-import shared.sequence.Event;
-import shared.sequence.SequenceHandler;
-import shared.sequence.SubPatternElement;
+
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -35,7 +33,7 @@ public interface PatternCallback {
 
     void applySequenceComputationResult(long currentTimestamp);
 
-    void addSequenceHandler(SequenceHandler sequenceHandler);
+   // void addSequenceHandler(SequenceHandler sequenceHandler);
 
 //    boolean belongsToSequenceHandler(Event event);
 

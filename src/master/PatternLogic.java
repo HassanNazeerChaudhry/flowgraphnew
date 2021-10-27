@@ -5,7 +5,6 @@ import shared.AkkaMessages.InstallSequenceMsg;
 import shared.AkkaMessages.NewTimestampMsg;
 import shared.PropertyHandler;
 import shared.patterns.Pattern;
-import shared.patterns.Sequence;
 import shared.patterns.Trigger;
 import shared.sequence.*;
 

@@ -1,18 +1,16 @@
 grammar Pattern;
 patternEntry
-    :   temporalClause followedBy  temporalClause ';')* EOF
+    :   temporalClause (followedBy  temporalClause)* ';' EOF
     ;
 
-
 temporalClause
-    :   graphProcessing
+    :   commandType |graphProcessing extraction (operationFunction)* evaluation
     ;
 
 //.......................................................
 
 graphProcessing
-    :    '.g()' (computation | selection | partition|extraction)* (evaluation)
-    |    temporalVariable (computation | selection | partition|extraction)* (evaluation)
+    :    '.g()' (computation | selection | partition)*
     ;
 
 computation
@@ -54,6 +52,21 @@ aliasedParameter
     ;
 
 followedBy: '.followedBy('temporalVariable ')';
+
+commandType
+    :    vertexType updateType
+    ;
+
+vertexType:
+    'vertex'
+    |'edge'
+    ;
+
+updateType:
+    'insert'
+    |'delete'
+    |'update'
+    ;
 
 //.......................................................
 

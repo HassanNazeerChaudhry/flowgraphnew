@@ -13,7 +13,6 @@ import shared.Utils;
 import shared.antlr4.GPatternParser;
 import shared.computation.Computation;
 import shared.patterns.Pattern;
-import shared.patterns.Sequence;
 import shared.patterns.Trigger;
 import shared.sequence.*;
 

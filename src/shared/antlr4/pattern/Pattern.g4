@@ -3,14 +3,16 @@ patternEntry
     :   temporalClause (followedBy  temporalClause)* ';' EOF
     ;
 
+
 temporalClause
-    :   commandType |graphProcessing extraction (operationFunction)* evaluation
+    :   graphProcessing extraction (operation)* evaluation 
     ;
 
 //.......................................................
 
 graphProcessing
     :    '.g()' (computation | selection | partition)*
+    |    temporalVariable (computation | selection | partition)*
     ;
 
 computation
@@ -52,21 +54,6 @@ aliasedParameter
     ;
 
 followedBy: '.followedBy('temporalVariable ')';
-
-commandType
-    :    vertexType updateType
-    ;
-
-vertexType:
-    'vertex'
-    |'edge'
-    ;
-
-updateType:
-    'insert'
-    |'delete'
-    |'update'
-    ;
 
 //.......................................................
 

@@ -24,4 +24,6 @@ public class Antrl2ProcElement extends PatternBaseVisitor<ProcElement> {
     public ProcElement visitPartByE(PatternParser.PartByEContext ctx) {
         return super.visitPartByE(ctx);
     }
+
+
 }

@@ -3,6 +3,7 @@ package shared.antlr4.visitor;
 import shared.antlr4.pattern.PatternBaseVisitor;
 import shared.antlr4.pattern.PatternParser;
 
+
 import java.util.regex.Pattern;
 
 public class Antlr2Pattern  extends PatternBaseVisitor<Pattern> {
@@ -13,12 +14,14 @@ public class Antlr2Pattern  extends PatternBaseVisitor<Pattern> {
     }
 
     @Override
+    public Pattern visitGraphModificationEvent(PatternParser.GraphModificationEventContext ctx) {
+        return super.visitGraphModificationEvent(ctx);
+    }
+
+    @Override
     public Pattern visitTemporalPattern(PatternParser.TemporalPatternContext ctx) {
         return super.visitTemporalPattern(ctx);
     }
 
-    @Override
-    public Pattern visitGraphModificationEvent(PatternParser.GraphModificationEventContext ctx) {
-        return super.visitGraphModificationEvent(ctx);
-    }
+
 }

@@ -12,14 +12,15 @@ public class Antlr2ClauseElement   extends PatternBaseVisitor<ClauseElement> {
     }
 
     @Override
+    public ClauseElement visitFollowedBy(PatternParser.FollowedByContext ctx) {
+        return super.visitFollowedBy(ctx);
+    }
+
+    @Override
     public ClauseElement visitGraphProc(PatternParser.GraphProcContext ctx) {
         return super.visitGraphProc(ctx);
     }
 
-    @Override
-    public ClauseElement visitEvaluation(PatternParser.EvaluationContext ctx) {
-        return super.visitEvaluation(ctx);
-    }
 
     @Override
     public ClauseElement visitExtractByV(PatternParser.ExtractByVContext ctx) {
@@ -32,7 +33,11 @@ public class Antlr2ClauseElement   extends PatternBaseVisitor<ClauseElement> {
     }
 
     @Override
-    public ClauseElement visitFollowedBy(PatternParser.FollowedByContext ctx) {
-        return super.visitFollowedBy(ctx);
+    public ClauseElement visitEvaluation(PatternParser.EvaluationContext ctx) {
+        return super.visitEvaluation(ctx);
     }
+
+
+
+
 }

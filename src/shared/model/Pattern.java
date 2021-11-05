@@ -1,9 +1,9 @@
-package shared.pattern;
+package shared.model;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class Pattern {
+public abstract class Pattern {
 
     List<PatternElement> pElements;
 

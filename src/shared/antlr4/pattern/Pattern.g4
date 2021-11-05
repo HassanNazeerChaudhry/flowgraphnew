@@ -1,12 +1,20 @@
 grammar Pattern;
+
+@header{
+ package src.shared.antlr4;
+}
+
 patternEntry
     :   temporalClause (followedBy  temporalClause)* ';' EOF
     ;
 
 
 temporalClause
-    :   graphProcessing extraction (operationFunction)* evaluation
+    :   graphProcessing extraction (operationFunction)* evaluation  #GraphProc
+    |   graphModificationEvent #GraphModf
     ;
+
+
 
 //.......................................................
 
@@ -29,8 +37,6 @@ partition
     :   '.SubGraphByV(' partitionFunction ')'
     |   '.SubGraphByE(' partitionFunction ')'
     ;
-
-
 
 
 extraction
@@ -58,9 +64,17 @@ aliasedParameter
     :   Litterals '=' operands
     ;
 
-followedBy: '.followedBy('temporalVariable ')';
+followedBy: '.followedBy('temporalVariable ')'
+;
 
-operation: ' ';
+graphModificationEvent: modifier change
+;
+
+modifier: Edge | Vertex
+;
+
+change: Add | Delete | Modify
+;
 
 //.......................................................
 

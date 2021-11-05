@@ -1,4 +1,4 @@
-package shared.pattern;
+package shared.model;
 
 import shared.variables.TemporalVariables;
 

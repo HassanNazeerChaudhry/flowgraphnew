@@ -1,4 +1,4 @@
-package shared.clauseelement.GraphProc;
+package shared.model.clauseelement.GraphProc;
 
 import shared.variables.ComputationParameter;
 import shared.variables.ComputationalVariable;

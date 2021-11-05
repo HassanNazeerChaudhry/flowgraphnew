@@ -1,4 +1,4 @@
-package shared.clauseelement.GraphProc;
+package shared.model.clauseelement.GraphProc;
 
 public class Selection extends ProcElement {
 

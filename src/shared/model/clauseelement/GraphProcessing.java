@@ -1,7 +1,7 @@
-package shared.clauseelement;
+package shared.model.clauseelement;
 
-import shared.clauseelement.GraphProc.ProcElement;
-import shared.pattern.ClauseElement;
+import shared.model.clauseelement.GraphProc.ProcElement;
+import shared.model.ClauseElement;
 
 import java.util.ArrayList;
 import java.util.List;

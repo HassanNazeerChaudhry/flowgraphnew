@@ -10,7 +10,6 @@ import shared.AkkaMessages.*;
 import shared.AkkaMessages.modifyGraph.*;
 import shared.PropertyHandler;
 import shared.Utils;
-import shared.antlr4.GPatternParser;
 import shared.computation.Computation;
 import shared.patterns.Pattern;
 import shared.patterns.Trigger;

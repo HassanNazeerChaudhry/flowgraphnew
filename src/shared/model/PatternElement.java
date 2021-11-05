@@ -1,4 +1,4 @@
-package shared.pattern;
+package shared.model;
 
 public class PatternElement {
    private TemporalClause clause1;

@@ -5,22 +5,27 @@ grammar Pattern;
 }
 
 patternEntry
-    :   temporalClause (followedBy  temporalClause)* ';' EOF
+    : graphModificationEvent
+    | temporalPattern
+    ;
+
+temporalPattern
+    :  temporalClause (followedBy  temporalClause)* ';' EOF
+    ;
+
+graphModificationEvent: (modifier change)+ ';' EOF
     ;
 
 
 temporalClause
-    :   graphProcessing extraction (operationFunction)* evaluation  #GraphProc
-    |   graphModificationEvent #GraphModf
-    ;
-
-
+    :   graphProcessing extraction (operationFunction)* evaluation
+   ;
 
 //.......................................................
 
 graphProcessing
-    :    '.g()' (computation | selection | partition)*
-    |    temporalVariable (computation | selection | partition)*
+    :    '.g()' (computation | selection | partition)*             #GraphProc
+    |    temporalVariable (computation | selection | partition)*   #GraphProcTemp
     ;
 
 computation
@@ -34,14 +39,14 @@ selection
 
 
 partition
-    :   '.SubGraphByV(' partitionFunction ')'
-    |   '.SubGraphByE(' partitionFunction ')'
+    :   '.SubGraphByV(' partitionFunction ')'  #PartByV
+    |   '.SubGraphByE(' partitionFunction ')'  #PartByE
     ;
 
 
 extraction
-    :   '.extractV(' label? (',' label)* ')'
-    |   '.extractE(' label? (',' label)* ')'
+    :   '.extractV(' label? (',' label)* ')' #ExtractByV
+    |   '.extractE(' label? (',' label)* ')' #ExtractByE
     ;
 
 evaluation
@@ -67,8 +72,7 @@ aliasedParameter
 followedBy: '.followedBy('temporalVariable ')'
 ;
 
-graphModificationEvent: modifier change
-;
+
 
 modifier: Edge | Vertex
 ;
@@ -80,12 +84,10 @@ change: Add | Delete | Modify
 
 selectionFunction
     :   logicalExpression edgeSelection
-    |
     ;
 
 edgeSelection
     :   'EDGE[' (logicalExpression | ) ']'
-    |
     ;
 
 logicalExpression

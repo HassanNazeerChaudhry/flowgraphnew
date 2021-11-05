@@ -11,7 +11,6 @@ import shared.AkkaMessages.LaunchMsg;
 import shared.AkkaMessages.TerminateMsg;
 import shared.PropertyHandler;
 import shared.Utils;
-import shared.antlr4.InputParser;
 
 import java.io.*;
 import java.util.Scanner;

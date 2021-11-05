@@ -13,17 +13,12 @@ public class Antlr2Pattern  extends PatternBaseVisitor<Pattern> {
     }
 
     @Override
-    public Pattern visitFollowedBy(PatternParser.FollowedByContext ctx) {
-        return super.visitFollowedBy(ctx);
+    public Pattern visitTemporalPattern(PatternParser.TemporalPatternContext ctx) {
+        return super.visitTemporalPattern(ctx);
     }
 
     @Override
-    public Pattern visitGraphProc(PatternParser.GraphProcContext ctx) {
-        return super.visitGraphProc(ctx);
-    }
-
-    @Override
-    public Pattern visitGraphModf(PatternParser.GraphModfContext ctx) {
-        return super.visitGraphModf(ctx);
+    public Pattern visitGraphModificationEvent(PatternParser.GraphModificationEventContext ctx) {
+        return super.visitGraphModificationEvent(ctx);
     }
 }

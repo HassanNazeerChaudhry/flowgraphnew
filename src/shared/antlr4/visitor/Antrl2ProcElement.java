@@ -5,7 +5,6 @@ import shared.antlr4.pattern.PatternParser;
 import shared.model.clauseelement.GraphProc.ProcElement;
 
 public class Antrl2ProcElement extends PatternBaseVisitor<ProcElement> {
-
     @Override
     public ProcElement visitComputation(PatternParser.ComputationContext ctx) {
         return super.visitComputation(ctx);
@@ -17,7 +16,12 @@ public class Antrl2ProcElement extends PatternBaseVisitor<ProcElement> {
     }
 
     @Override
-    public ProcElement visitPartition(PatternParser.PartitionContext ctx) {
-        return super.visitPartition(ctx);
+    public ProcElement visitPartByV(PatternParser.PartByVContext ctx) {
+        return super.visitPartByV(ctx);
+    }
+
+    @Override
+    public ProcElement visitPartByE(PatternParser.PartByEContext ctx) {
+        return super.visitPartByE(ctx);
     }
 }

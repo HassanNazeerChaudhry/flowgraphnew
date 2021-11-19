@@ -2,21 +2,60 @@ package shared.antlr4.visitor;
 
 import shared.antlr4.pattern.PatternBaseVisitor;
 import shared.antlr4.pattern.PatternParser;
-import shared.model.clauseelement.GraphProc.Computation;
+import shared.computations.Computations;
+import shared.computations.solvers.InDegree;
+import shared.computations.solvers.PageRank;
+import shared.computations.solvers.TriangleCount;
+import shared.model.clauseelement.graphproc.compelements.ComputationParameter;
+import shared.model.clauseelement.graphproc.compelements.ComputationalElements;
+import shared.model.clauseelement.graphproc.compelements.ComputationalVariable;
+import shared.model.clauseelement.graphproc.compelements.FunctionName;
 
-public class Antlr2Computation extends PatternBaseVisitor<Computation> {
+
+import java.util.Arrays;
+import java.util.List;
+
+public class Antlr2Computation extends PatternBaseVisitor<ComputationalElements> {
+
+private List<String> vars;
+private List<String> semanticErrors;
+private List<String> fNameList = Arrays.asList("Triangle", "PRank", "InDegree");
+
     @Override
-    public Computation visitComputationFunction(PatternParser.ComputationFunctionContext ctx) {
-        return super.visitComputationFunction(ctx);
+    public ComputationalElements visitComputationFunction(PatternParser.ComputationFunctionContext ctx) {
+        String funcName=ctx.getChild(0).getText();
+
+        if(!fNameList.contains(funcName)){
+            semanticErrors.add("Error: computation function "+funcName+ " does not exist");
+        }
+
+        return new FunctionName(funcName);
+
     }
 
-    @Override
-    public Computation visitComputationReturnVariables(PatternParser.ComputationReturnVariablesContext ctx) {
-        return super.visitComputationReturnVariables(ctx);
-    }
+
+
+
 
     @Override
-    public Computation visitComputationParameters(PatternParser.ComputationParametersContext ctx) {
-        return super.visitComputationParameters(ctx);
+    public ComputationalElements visitComputationReturnVariables(PatternParser.ComputationReturnVariablesContext ctx) {
+        String varName=ctx.getChild(1).getText();
+        if(vars.contains(varName)){
+              semanticErrors.add("Error: Variable "+varName+ "already declared");
+
+        }
+
+        return new ComputationalVariable(varName);
+
+    }
+
+
+
+    @Override
+    public ComputationalElements visitComputationParameters(PatternParser.ComputationParametersContext ctx) {
+        String lVal=ctx.getChild(1).getText();
+        String rVal=ctx.getChild(3).getText();
+        return new ComputationParameter(lVal,rVal);
+
     }
 }

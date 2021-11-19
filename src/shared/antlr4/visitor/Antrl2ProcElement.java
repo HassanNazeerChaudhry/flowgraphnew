@@ -2,7 +2,7 @@ package shared.antlr4.visitor;
 
 import shared.antlr4.pattern.PatternBaseVisitor;
 import shared.antlr4.pattern.PatternParser;
-import shared.model.clauseelement.GraphProc.ProcElement;
+import shared.model.clauseelement.graphproc.ProcElement;
 
 public class Antrl2ProcElement extends PatternBaseVisitor<ProcElement> {
     @Override

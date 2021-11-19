@@ -5,27 +5,20 @@ grammar Pattern;
 }
 
 patternEntry
-    : graphModificationEvent
-    | temporalPattern
-    ;
-
-temporalPattern
-    :  temporalClause (followedBy  temporalClause)* ';' EOF
-    ;
-
-graphModificationEvent: (modifier change)+ ';' EOF
+    :   temporalClause (followedBy  temporalClause)* ';' EOF
     ;
 
 
 temporalClause
-    :   graphProcessing extraction (operationFunction)* evaluation
-   ;
+    :   graphProcessing extraction (operationFunction)* evaluation  #GraphProc
+    |   graphModificationEvent #GraphModf
+    ;
 
 //.......................................................
 
 graphProcessing
-    :    '.g()' (computation | selection | partition)*             #GraphProc
-    |    temporalVariable (computation | selection | partition)*   #GraphProcTemp
+    :    '.g()' (computation | selection | partition)*
+    |    temporalVariable (computation | selection | partition)*
     ;
 
 computation
@@ -39,40 +32,25 @@ selection
 
 
 partition
-    :   '.SubGraphByV(' partitionFunction ')'  #PartByV
-    |   '.SubGraphByE(' partitionFunction ')'  #PartByE
+    :   '.SubGraphByV(' partitionFunction ')'
+    |   '.SubGraphByE(' partitionFunction ')'
     ;
 
 
 extraction
-    :   '.extractV(' label? (',' label)* ')' #ExtractByV
-    |   '.extractE(' label? (',' label)* ')' #ExtractByE
+    :   '.extractV(' label? (',' label)* ')'
+    |   '.extractE(' label? (',' label)* ')'
     ;
 
 evaluation
     :   '.evaluate(' Operator ',' value ',' fireEvent ')'
     ;
 
-computationFunction
-    :   functionName ',' computationReturnVariables ( computationParameters )?
-    ;
-
-computationReturnVariables
-    :   variable (',' variable)*
-    ;
-
-computationParameters
-    :   ', [' ( aliasedParameter ',')* aliasedParameter ']'
-    ;
-
-aliasedParameter
-    :   Litterals '=' operands
-    ;
-
 followedBy: '.followedBy('temporalVariable ')'
 ;
 
-
+graphModificationEvent: modifier change
+;
 
 modifier: Edge | Vertex
 ;
@@ -81,9 +59,23 @@ change: Add | Delete | Modify
 ;
 
 //.......................................................
+computationFunction
+    :   functionName ',' computationReturnVariables ( computationParameters )?
+    ;
+
+computationReturnVariables
+    :   '$' Litterals
+    ;
+
+computationParameters
+    :   ', ['  Litterals '='  Litterals ']'
+    ;
+
+//.......................................................
 
 selectionFunction
     :   logicalExpression edgeSelection
+    |
     ;
 
 edgeSelection
@@ -108,7 +100,7 @@ primaryExpression
     ;
 
 boolPredicate
-    :   leftOp=operands Operator rightOp=operands
+    :   operands Operator operands
     ;
 
 operands
@@ -188,6 +180,3 @@ Number : [0-9] ;
 
 //for windows  [\t \r \n]+ -> skip, for linux [ \t\n]+ -> skip;
 Skip : [ \t\r\n]+ -> skip;
-
-
-

@@ -3,7 +3,7 @@ package shared.model.clauseelement.graphproc.selelements;
 
 import shared.variables.Operands;
 
-public class BooleanPredicate {
+public class BooleanPredicate extends  SelectionFunction {
 
 
     public enum Operator {
@@ -21,15 +21,18 @@ public class BooleanPredicate {
         }
     }
 
-    private Operands op1;
-    private Operands op2;
-    private Operator opr;
+    private String op1;
+    private String op2;
+    private String opr;
 
-    public BooleanPredicate(Operands op1, Operands op2, Operator opr) {
+    public BooleanPredicate(String op1, String op2, String opr) {
         this.op1 = op1;
         this.op2 = op2;
         this.opr = opr;
     }
+
+
+
 
 
 

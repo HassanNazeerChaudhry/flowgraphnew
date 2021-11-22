@@ -18,23 +18,23 @@ public class Antlr2Common extends PatternBaseVisitor<Operands> {
     @Override
     public Operands visitTemporalVariable(PatternParser.TemporalVariableContext ctx) {
 
-     if(ctx.children.size()==1) {
+     if(ctx.children.size()==2) {
 
-         String varName= ctx.getChild(0).getText();
+         String varName= ctx.getChild(1).getText();
          return new TemporalVariables(new Variable(varName));
      }
 
-     else if(ctx.children.size()==3){
-         String varName= ctx.getChild(0).getText();
-         String timeUnit= ctx.getChild(2).getText();
+     else if(ctx.children.size()==4){
+         String varName= ctx.getChild(1).getText();
+         String timeUnit= ctx.getChild(3).getText();
 
          return new TemporalVariables(true,new Variable(varName), Float.parseFloat(timeUnit));
      }
 
 
-     else if (ctx.children.size()==4){
-         String varName= ctx.getChild(0).getText();
-         String timeUnit= ctx.getChild(3).getText();
+     else if (ctx.children.size()==5){
+         String varName= ctx.getChild(1).getText();
+         String timeUnit= ctx.getChild(4).getText();
          return new TemporalVariables(true,true, new Variable(varName), Float.parseFloat(timeUnit));
      }
 
@@ -67,5 +67,47 @@ public class Antlr2Common extends PatternBaseVisitor<Operands> {
     public Operands visitValue(PatternParser.ValueContext ctx) {
         String labelVal= ctx.getChild(1).getText();
         return new Value(Integer.parseInt(labelVal));
+    }
+
+
+    @Override
+    public Operands visitOperands(PatternParser.OperandsContext ctx) {
+
+        if(ctx.children.size()==1) {  //label
+            String labelName= ctx.getChild(0).getText();
+            return new Variable(labelName);
+        }
+
+        else if(ctx.children.size()==2){ //temporal variable, variable
+            String varName= ctx.getChild(1).getText();
+            return new TemporalVariables(new Variable(varName));
+        }
+
+        else if(ctx.children.size()==3){ //value
+            String valName= ctx.getChild(1).getText();
+            return new Value(Integer.parseInt(valName));
+        }
+
+        else if (ctx.children.size()==4){ //temporal variable, variable with ago
+            String varName= ctx.getChild(1).getText();
+            String timeUnit= ctx.getChild(3).getText();
+
+            return new TemporalVariables(true,new Variable(varName), Float.parseFloat(timeUnit));
+        }
+
+
+
+        else if (ctx.children.size()==5){ //temporal variable with every and within
+            String varName= ctx.getChild(1).getText();
+            String timeUnit= ctx.getChild(4).getText();
+            return new TemporalVariables(true,true, new Variable(varName), Float.parseFloat(timeUnit));
+        }
+
+        else{
+            String varName= ctx.getChild(0).getText();
+            return new TemporalVariables(new Variable(varName));
+
+        }
+
     }
 }

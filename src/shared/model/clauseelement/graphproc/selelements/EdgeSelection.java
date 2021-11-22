@@ -1,4 +1,7 @@
 package shared.model.clauseelement.graphproc.selelements;
 
-public class EdgeSelection {
+public class EdgeSelection extends SelectionFunction {
+
+
+
 }

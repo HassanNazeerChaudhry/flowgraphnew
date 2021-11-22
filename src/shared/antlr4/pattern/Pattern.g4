@@ -74,12 +74,11 @@ computationParameters
 //.......................................................
 
 selectionFunction
-    :   logicalExpression edgeSelection
-    |
+    :   logicalExpression  edgeSelection
     ;
 
 edgeSelection
-    :   'EDGE[' (logicalExpression | ) ']'
+    :   'EDGE[' (logicalExpression ) ']'
     ;
 
 logicalExpression

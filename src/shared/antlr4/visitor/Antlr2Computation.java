@@ -40,10 +40,17 @@ private List<String> fNameList = Arrays.asList("Triangle", "PRank", "InDegree");
     @Override
     public ComputationalElements visitComputationReturnVariables(PatternParser.ComputationReturnVariablesContext ctx) {
         String varName=ctx.getChild(1).getText();
+
+
+
         if(vars.contains(varName)){
               semanticErrors.add("Error: Variable "+varName+ "already declared");
 
         }
+        else{
+            vars.add(varName);
+        }
+
 
         return new ComputationalVariable(varName);
 

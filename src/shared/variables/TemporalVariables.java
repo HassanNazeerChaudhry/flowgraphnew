@@ -6,10 +6,23 @@ public class TemporalVariables extends Operands{
     private Variable var;
     private float timeUnit;
 
-    public TemporalVariables(boolean isWithin, boolean isEvery, String varName, float timeUnit) {
+
+
+    public TemporalVariables(Variable var) {
+        this.var = var;
+    }
+
+    public TemporalVariables(boolean isWithin, Variable var, float timeUnit) {
+        this.isWithin = isWithin;
+        this.var = var;
+        this.timeUnit = timeUnit;
+    }
+
+
+    public TemporalVariables(boolean isWithin, boolean isEvery, Variable var, float timeUnit) {
         this.isWithin = isWithin;
         this.isEvery = isEvery;
-        this.var = new Variable(varName);
+        this.var = var;
         this.timeUnit = timeUnit;
     }
 

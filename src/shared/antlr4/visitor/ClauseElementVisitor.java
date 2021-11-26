@@ -3,14 +3,13 @@ package shared.antlr4.visitor;
 import shared.antlr4.pattern.PatternBaseVisitor;
 import shared.antlr4.pattern.PatternParser;
 import shared.model.ClauseElement;
-import shared.model.Pattern;
+import shared.model.clauseelement.GraphModification;
+import shared.model.enumerators.Change;
+import shared.model.enumerators.Modifier;
+import shared.model.enumerators.Operator;
+import shared.model.clauseelement.Evaluation;
 import shared.model.clauseelement.Extraction;
 import shared.model.clauseelement.GraphProcessing;
-import shared.model.clauseelement.graphproc.Computation;
-import shared.model.clauseelement.graphproc.ProcElement;
-import shared.model.clauseelement.graphproc.selelements.SelectionFunction;
-
-import java.util.List;
 
 public class ClauseElementVisitor   extends PatternBaseVisitor<ClauseElement> {
 
@@ -33,7 +32,7 @@ public class ClauseElementVisitor   extends PatternBaseVisitor<ClauseElement> {
 
     @Override
     public ClauseElement visitExtraction(PatternParser.ExtractionContext ctx) {
-        ExtractionVisitor extractionVisitor = new ExtractionVisitor();
+
         Extraction extraction = new Extraction();
 
         if (ctx.getChild(0).equals(".extractV(")) {
@@ -61,9 +60,6 @@ public class ClauseElementVisitor   extends PatternBaseVisitor<ClauseElement> {
 
 
 
-
-
-
     @Override
     public ClauseElement visitOperationFunction(PatternParser.OperationFunctionContext ctx) {
         return super.visitOperationFunction(ctx);
@@ -72,13 +68,20 @@ public class ClauseElementVisitor   extends PatternBaseVisitor<ClauseElement> {
 
     @Override
     public ClauseElement visitEvaluation(PatternParser.EvaluationContext ctx) {
-        return super.visitEvaluation(ctx);
+        Evaluation evaluation= new Evaluation();
+        Operator opr=Operator.ERROR;
+        int value=Integer.parseInt(ctx.getChild(3).getText());
+        evaluation.addEvaluation(opr.convertStr2Operator(ctx.getChild(1).getText()),value, ctx.getChild(5).getText() );
+        return evaluation;
     }
+
 
 
 
     @Override
     public ClauseElement visitGraphModificationEvent(PatternParser.GraphModificationEventContext ctx) {
-        return super.visitGraphModificationEvent(ctx);
+        Modifier mdf=Modifier.ERROR;
+        Change chg= Change.ERROR;
+        return new GraphModification(mdf.convertStr2Modifier(ctx.getChild(0).getText()), chg.convertStr2Change(ctx.getChild(1).getText()));
     }
 }

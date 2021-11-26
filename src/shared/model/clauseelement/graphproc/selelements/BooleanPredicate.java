@@ -1,26 +1,11 @@
 package shared.model.clauseelement.graphproc.selelements;
 
 
+import shared.model.enumerators.Operator;
 import shared.variables.Operands;
 
 public class BooleanPredicate extends  SelectionFunction {
 
-
-    public enum Operator {
-
-        EQUAL("=="),
-        GREATER(">"),
-        LESS("<"),
-        GREATEREQUAL(">="),
-        LESSEQUAL("<="),
-        ERROR("");
-
-        public final String opString;
-
-        Operator(String opString) {
-            this.opString = opString;
-        }
-    }
 
     private Operands op1;
     private Operator opr;
@@ -35,16 +20,7 @@ public class BooleanPredicate extends  SelectionFunction {
         this.op2 = op2;
     }
 
-    public Operator convertStr2Operator(String oprStr){
-        switch(oprStr){
-            case  "==": return Operator.EQUAL;
-            case ">": return Operator.GREATER;
-            case "<": return Operator.LESS;
-            case ">=": return Operator.GREATEREQUAL;
-            case "<=": return Operator.LESSEQUAL;
-            default: return Operator.ERROR;
-        }
-    }
+
 
 
 

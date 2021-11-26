@@ -2,29 +2,23 @@ package shared.model.clauseelement;
 
 
 import shared.model.ClauseElement;
+import shared.model.enumerators.Change;
+import shared.model.enumerators.Modifier;
 
 
 public class GraphModification  extends ClauseElement {
 
-    MODIFIER modifier;
-    CHANGE change;
+    Modifier modifier;
+    Change change;
 
-    enum MODIFIER {
-        Vertex,
-        EDGE,
-        HIGH
+    public GraphModification() {
     }
 
-    enum CHANGE {
-        DELETE,
-        ADD,
-        MODIFY
-    }
-
-    public GraphModification(MODIFIER modifier, CHANGE change) {
+    public GraphModification(Modifier modifier, Change change) {
         this.modifier = modifier;
         this.change = change;
     }
+
 
 
 

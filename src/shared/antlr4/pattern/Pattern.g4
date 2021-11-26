@@ -118,7 +118,7 @@ oneFieldOperationAlias
     ;
 
 emission
-    :   '.emit(' variable ')'
+    :   '.emit(' variable ')'-
     ;
 
 temporalVariable

@@ -15,7 +15,6 @@ temporalClause
     ;
 
 //.......................................................
-
 graphProcessing
     :    '.g()' (computation | selection | partition)*
     |    temporalVariable (computation | selection | partition)*
@@ -46,7 +45,7 @@ evaluation
     :   '.evaluate(' Operator ',' value ',' fireEvent ')'
     ;
 
-followedBy: '.followedBy('temporalVariable ')'
+followedBy: '.followedBy(' temporalVariable ')'
 ;
 
 graphModificationEvent: modifier change
@@ -94,16 +93,11 @@ unaryExpression
     ;
 
 primaryExpression
-    :    '(' logicalExpression ')'
-    |    boolPredicate
-    ;
-
-boolPredicate
-    :   operands Operator operands
-    ;
+    :  operands Operator operands
+     ;
 
 operands
-    : (label | temporalVariable | value)
+    : (sellabel  | selvalue)
     ;
 
 //..............................................
@@ -136,6 +130,17 @@ temporalVariable
 functionName
     :   Litterals
     ;
+
+sellabel
+ :   Litterals
+    ;
+
+
+selvalue
+:   '\''Litterals '\''
+    ;
+
+
 
 label
     :   Litterals

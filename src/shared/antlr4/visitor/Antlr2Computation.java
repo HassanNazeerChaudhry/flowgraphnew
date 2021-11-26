@@ -2,10 +2,6 @@ package shared.antlr4.visitor;
 
 import shared.antlr4.pattern.PatternBaseVisitor;
 import shared.antlr4.pattern.PatternParser;
-import shared.computations.Computations;
-import shared.computations.solvers.InDegree;
-import shared.computations.solvers.PageRank;
-import shared.computations.solvers.TriangleCount;
 import shared.model.clauseelement.graphproc.compelements.ComputationParameter;
 import shared.model.clauseelement.graphproc.compelements.ComputationalElements;
 import shared.model.clauseelement.graphproc.compelements.ComputationalVariable;
@@ -32,8 +28,6 @@ private List<String> fNameList = Arrays.asList("Triangle", "PRank", "InDegree");
         return new FunctionName(funcName);
 
     }
-
-
 
 
 

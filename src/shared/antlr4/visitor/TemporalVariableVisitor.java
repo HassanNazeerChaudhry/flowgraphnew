@@ -9,7 +9,7 @@ import shared.variables.Value;
 import shared.variables.Variable;
 import java.util.List;
 
-public class Antlr2Common extends PatternBaseVisitor<Operands> {
+public class TemporalVariableVisitor extends PatternBaseVisitor<Operands> {
 
     private List<String> labels;
     private List<String> semanticErrors;

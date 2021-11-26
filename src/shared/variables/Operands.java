@@ -1,6 +1,8 @@
 package shared.variables;
 
-public abstract class  Operands {
+import shared.model.clauseelement.graphproc.selelements.SelectionFunction;
+
+public abstract class  Operands  extends SelectionFunction {
 
 
 

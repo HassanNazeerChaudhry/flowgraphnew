@@ -16,6 +16,11 @@ public class TemporalClause extends PatternElement {
 
 
 
+    public void addClauseElements(ClauseElement clauseElement){
+        cElements.add(clauseElement);
+    }
+
+
 }
 
 

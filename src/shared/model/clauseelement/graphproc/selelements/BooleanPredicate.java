@@ -12,7 +12,8 @@ public class BooleanPredicate extends  SelectionFunction {
         GREATER(">"),
         LESS("<"),
         GREATEREQUAL(">="),
-        LESSEQUAL("<=");
+        LESSEQUAL("<="),
+        ERROR("");
 
         public final String opString;
 
@@ -21,18 +22,29 @@ public class BooleanPredicate extends  SelectionFunction {
         }
     }
 
-    private String op1;
-    private String op2;
-    private String opr;
+    private Operands op1;
+    private Operator opr;
+    private Operands op2;
 
-    public BooleanPredicate(String op1, String op2, String opr) {
-        this.op1 = op1;
-        this.op2 = op2;
-        this.opr = opr;
+    public BooleanPredicate() {
     }
 
+    public BooleanPredicate(Operands op1, Operator opr, Operands op2) {
+        this.op1 = op1;
+        this.opr = opr;
+        this.op2 = op2;
+    }
 
-
+    public Operator convertStr2Operator(String oprStr){
+        switch(oprStr){
+            case  "==": return Operator.EQUAL;
+            case ">": return Operator.GREATER;
+            case "<": return Operator.LESS;
+            case ">=": return Operator.GREATEREQUAL;
+            case "<=": return Operator.LESSEQUAL;
+            default: return Operator.ERROR;
+        }
+    }
 
 
 

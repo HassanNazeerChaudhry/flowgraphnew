@@ -8,10 +8,19 @@ import java.util.List;
 
 public class  GraphProcessing  extends ClauseElement {
     List<ProcElement> pElements;
+
     public GraphProcessing() {
         this.pElements = new ArrayList<>();
     }
 
 
+    public GraphProcessing(List<ProcElement> pElements) {
+        this.pElements = pElements;
+    }
+
+    public void addProcElement(ProcElement procElement){
+        pElements.add(procElement);
+
+    }
 
 }

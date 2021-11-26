@@ -11,7 +11,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 
-public class Antlr2Selection extends PatternBaseVisitor<SelectionFunction> {
+public class SelectionVisitor extends PatternBaseVisitor<SelectionFunction> {
 
 
 

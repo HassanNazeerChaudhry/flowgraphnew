@@ -37,8 +37,8 @@ partition
 
 
 extraction
-    :   '.extractV(' label? (',' label)* ')'
-    |   '.extractE(' label? (',' label)* ')'
+    :   '.extractV(' label (',' label)* ')'
+    |   '.extractE(' label (',' label)* ')'
     ;
 
 evaluation

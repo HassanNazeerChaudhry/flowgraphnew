@@ -11,7 +11,7 @@ import shared.model.clauseelement.graphproc.compelements.FunctionName;
 import java.util.Arrays;
 import java.util.List;
 
-public class Antlr2Computation extends PatternBaseVisitor<ComputationalElements> {
+public class ComputationVisitor extends PatternBaseVisitor<ComputationalElements> {
 
 private List<String> vars;
 private List<String> semanticErrors;

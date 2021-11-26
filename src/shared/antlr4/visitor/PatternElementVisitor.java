@@ -40,8 +40,6 @@ public class PatternElementVisitor extends PatternBaseVisitor<PatternElement> {
 
     @Override
     public PatternElement visitGraphModf(PatternParser.GraphModfContext ctx) {
-
-
         ClauseElementVisitor clauseElementVisitor= new ClauseElementVisitor();
         TemporalClause temporalClause=new TemporalClause();
 

@@ -13,7 +13,8 @@ import java.util.List;
 
 public class SelectionVisitor extends PatternBaseVisitor<SelectionFunction> {
 
-
+    public SelectionVisitor() {
+    }
 
     @Override
     public SelectionFunction visitSelection(PatternParser.SelectionContext ctx) {

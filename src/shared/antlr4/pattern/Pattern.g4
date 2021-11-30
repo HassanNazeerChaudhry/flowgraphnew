@@ -109,12 +109,9 @@ operationFunction
     :   ( '.map' | '.flatmap' | '.reduce' | '.filter' ) '(' functionName (tupleField (',' tupleField)*)? ')'
     |   ('.groupby' | '.Merge') '(' tupleField (',' tupleField)* ')'
     |   '.collect'
-    |   oneFieldOperationAlias ('(' tupleField ')')?
+    |   ( '.avg' | '.max' | '.min' | '.count' | '.select' ) ('(' tupleField ')')?
     ;
 
-oneFieldOperationAlias
-    :   '.avg' | '.max' | '.min' | '.count' | '.select'
-    ;
 
 emission
     :   '.emit(' variable ')'

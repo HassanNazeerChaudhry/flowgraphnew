@@ -11,7 +11,7 @@ public class PatternElementVisitor extends PatternBaseVisitor<PatternElement> {
     public PatternElementVisitor() {
     }
 
-
+   //graph proc include graph processing, extraction, operational function, evaluation
     @Override
     public PatternElement visitGraphProc(PatternParser.GraphProcContext ctx) {
        ClauseElementVisitor clauseElementVisitor= new ClauseElementVisitor();
@@ -19,9 +19,9 @@ public class PatternElementVisitor extends PatternBaseVisitor<PatternElement> {
 
        if(ctx.getChildCount()>1){
            temporalClause.addClauseElements(clauseElementVisitor.visit(ctx.getChild(0)));   // graphProcessing
-           temporalClause.addClauseElements(clauseElementVisitor.visit(ctx.getChild(1))); // extractrion
+           temporalClause.addClauseElements(clauseElementVisitor.visit(ctx.getChild(1))); // extraction
 
-
+        //operational function
         for(int i=2; i<ctx.getChildCount()-1; i++ ){
             temporalClause.addClauseElements(clauseElementVisitor.visit(ctx.getChild(i)));
         }
@@ -38,6 +38,8 @@ public class PatternElementVisitor extends PatternBaseVisitor<PatternElement> {
      return temporalClause;
     }
 
+
+    //graph proc include graph processing, extraction, operational function, evaluation
     @Override
     public PatternElement visitGraphModf(PatternParser.GraphModfContext ctx) {
         ClauseElementVisitor clauseElementVisitor= new ClauseElementVisitor();
@@ -46,6 +48,8 @@ public class PatternElementVisitor extends PatternBaseVisitor<PatternElement> {
         temporalClause.addClauseElements(clauseElementVisitor.visit(ctx.getChild(0)));
         return temporalClause;
     }
+
+
 
     @Override
     public PatternElement visitFollowedBy(PatternParser.FollowedByContext ctx) {

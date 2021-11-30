@@ -24,44 +24,34 @@ public class SelectionVisitor extends PatternBaseVisitor<SelectionFunction> {
 
     @Override
     public SelectionFunction visitLogicalExpression(PatternParser.LogicalExpressionContext ctx) {
-      //SelectionFunction[] sFunc= new BooleanAndFunction[ctx.getChildCount()/2];
+        List<SelectionFunction> selVar= new ArrayList<>();;
 
-        List<BooleanAndFunction> selVar= new ArrayList<>();;
 
-        SelectionFunction selFunc= new BooleanAndFunction();
+        if(ctx.getChildCount()>1){
+            selVar.add(visit(ctx.getChild(0)));
+        }
+        else{
+            for(int i=0; i<ctx.getChildCount()+1;i+=2){
+                selVar.add(visit(ctx.getChild(i)));
+            }
 
-      for(int i=0; i<ctx.getChildCount()+1;i+=2){
+        }
 
-          selFunc= visit(ctx.getChild(i));
-          selVar.add(selFunc);
 
-      }
+
+        return selVar;
 
 
 
     }
-
-    public class LogicalExpression extends SelectionFunction{
-        private List<BooleanAndFunction> selVar;
-
-        public LogicalExpression() {
-        }
-
-        public LogicalExpression(List<BooleanAndFunction> selVar) {
-            this.selVar = selVar;
-        }
-    }
-
-
-
-
-
-
 
     @Override
     public SelectionFunction visitEdgeSelection(PatternParser.EdgeSelectionContext ctx) {
         return super.visitEdgeSelection(ctx);
     }
+
+
+
 
     @Override
     public SelectionFunction visitBooleanAndExpression(PatternParser.BooleanAndExpressionContext ctx) {

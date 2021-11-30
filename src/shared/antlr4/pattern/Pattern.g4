@@ -16,8 +16,7 @@ temporalClause
 
 //.......................................................
 graphProcessing
-    :    '.g()' (computation | selection | partition)*
-    |    temporalVariable (computation | selection | partition)*
+    :    '.g()' (computation | selection | partition)
     ;
 
 computation

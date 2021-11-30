@@ -16,7 +16,7 @@ public class ProcElementVisitor extends PatternBaseVisitor<ProcElement> {
     public ProcElement visitComputation(PatternParser.ComputationContext ctx) {
         ComputationVisitor computationVisitor= new ComputationVisitor();
         Computation computation= new Computation();
-        computation.addComputationElement(computationVisitor.visit(ctx.getChild(0)));
+        computation.addComputationElement(computationVisitor.visit(ctx.getChild(1)));
         return  computation;
     }
 
@@ -24,7 +24,7 @@ public class ProcElementVisitor extends PatternBaseVisitor<ProcElement> {
     public ProcElement visitSelection(PatternParser.SelectionContext ctx) {
         SelectionVisitor selectionVisitor=new SelectionVisitor();
         Selection selection= new Selection();
-        selection.addSelectionFunction(selectionVisitor.visit(ctx.getChild(1)));
+        selection.addSelectionFunction(selectionVisitor.visit(ctx.getChild(2)));
         return selection;
 
     }
@@ -33,6 +33,8 @@ public class ProcElementVisitor extends PatternBaseVisitor<ProcElement> {
     public ProcElement visitPartition(PatternParser.PartitionContext ctx) {
         PartitioningVisitor partitioningVisitor= new PartitioningVisitor();
         Partition partition= new Partition();
+
+
 
         if (ctx.getChild(0).equals(".SubGraphByV(")) {
 

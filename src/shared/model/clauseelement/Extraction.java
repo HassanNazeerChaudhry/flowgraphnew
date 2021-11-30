@@ -12,24 +12,12 @@ public class Extraction extends ClauseElement {
 
 
 
-    public Extraction(boolean isVertexExtraction, boolean isEdgeExtraction, String label, List<String> labelCollection) {
+    public Extraction(boolean isVertexExtraction, boolean isEdgeExtraction, List<String> labelCollection) {
         this.isVertexExtraction = isVertexExtraction;
         this.isEdgeExtraction = isEdgeExtraction;
-
+        this.labelCollection=labelCollection;
     }
 
-    public Extraction() {
-    }
-
-    public void addExtraction(boolean isVertexExtraction, boolean isEdgeExtraction){
-        this.isVertexExtraction=isVertexExtraction;
-        this.isEdgeExtraction=isEdgeExtraction;
-    }
-
-
-    public void addExtractionLabel(String label){
-      labelCollection.add(label);
-    }
 
 
 

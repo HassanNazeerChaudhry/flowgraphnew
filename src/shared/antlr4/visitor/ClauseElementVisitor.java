@@ -11,6 +11,9 @@ import shared.model.clauseelement.Evaluation;
 import shared.model.clauseelement.Extraction;
 import shared.model.clauseelement.GraphProcessing;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class ClauseElementVisitor   extends PatternBaseVisitor<ClauseElement> {
 
     public ClauseElementVisitor() {
@@ -33,28 +36,31 @@ public class ClauseElementVisitor   extends PatternBaseVisitor<ClauseElement> {
     @Override
     public ClauseElement visitExtraction(PatternParser.ExtractionContext ctx) {
 
-        Extraction extraction = new Extraction();
+        boolean isVertexExtraction=false;
+        boolean isEdgeExtraction=false;
+        List<String> labelCollection= new ArrayList<>();
+
 
         if (ctx.getChild(0).equals(".extractV(")) {
-
-            extraction.addExtraction(true, false);
+            isVertexExtraction= true;
+            isEdgeExtraction   =false;
         } else if (ctx.getChild(0).equals(".extractE(")) {
-            extraction.addExtraction(false, true);
-
+            isVertexExtraction= false;
+            isEdgeExtraction   =true;
         }
 
+        labelCollection.add(ctx.getChild(1).getText());
 
-        extraction.addExtractionLabel(ctx.getChild(1).getText());
+
         if(ctx.getChildCount()>3){
 
             for(int i=3; i<ctx.getChildCount();i+=2){
-
-                extraction.addExtractionLabel(ctx.getChild(i).getText());
+                labelCollection.add(ctx.getChild(i).getText());
             }
 
         }
+        return new Extraction(isVertexExtraction,isEdgeExtraction,labelCollection);
 
-     return extraction;
 
     }
 

@@ -2,29 +2,29 @@ package shared.antlr4.visitor;
 
 import shared.antlr4.pattern.PatternBaseVisitor;
 import shared.antlr4.pattern.PatternParser;
-import shared.model.clauseelement.graphproc.selelements.BooleanAndFunction;
-import shared.model.clauseelement.graphproc.selelements.BooleanPredicate;
-import shared.model.clauseelement.graphproc.selelements.LogicalExpression;
-import shared.model.clauseelement.graphproc.selelements.SelectionFunction;
+import shared.model.clauseelement.graphproc.selelements.*;
+import shared.model.enumerators.Operator;
 
 import java.util.ArrayList;
 import java.util.List;
 
 
-public class SelectionVisitor extends PatternBaseVisitor<SelectionFunction> {
+public class SelectionVisitor extends PatternBaseVisitor<SelectionFunctionAbstract> {
 
     public SelectionVisitor() {
     }
 
     @Override
-    public SelectionFunction visitSelection(PatternParser.SelectionContext ctx) {
-        SelectionFunction sFunc=visit(ctx.getChild(1));
-        return sFunc;
+    public SelectionFunctionAbstract visitSelectionFunction(PatternParser.SelectionFunctionContext ctx) {
+         SelectionFunction selectionFunction= new SelectionFunction();
+         selectionFunction.addNewSelection(visit(ctx.getChild(0)), visit(ctx.getChild(1)));
+         return selectionFunction;
     }
 
     @Override
-    public SelectionFunction visitLogicalExpression(PatternParser.LogicalExpressionContext ctx) {
-        List<SelectionFunction> selVar= new ArrayList<>();;
+    public SelectionFunctionAbstract visitLogicalExpression(PatternParser.LogicalExpressionContext ctx) {
+        LogicalExpression logicalExpression= new LogicalExpression();
+        List<SelectionFunctionAbstract> selVar= new ArrayList<>();
 
 
         if(ctx.getChildCount()>1){
@@ -36,17 +36,12 @@ public class SelectionVisitor extends PatternBaseVisitor<SelectionFunction> {
             }
 
         }
-
-
-
-        return selVar;
-
-
-
+        logicalExpression.addLogicalExpression(selVar);
+        return logicalExpression;
     }
 
     @Override
-    public SelectionFunction visitEdgeSelection(PatternParser.EdgeSelectionContext ctx) {
+    public SelectionFunctionAbstract visitEdgeSelection(PatternParser.EdgeSelectionContext ctx) {
         return super.visitEdgeSelection(ctx);
     }
 
@@ -54,39 +49,50 @@ public class SelectionVisitor extends PatternBaseVisitor<SelectionFunction> {
 
 
     @Override
-    public SelectionFunction visitBooleanAndExpression(PatternParser.BooleanAndExpressionContext ctx) {
-        return super.visitBooleanAndExpression(ctx);
+    public SelectionFunctionAbstract visitBooleanAndExpression(PatternParser.BooleanAndExpressionContext ctx) {
+        BooleanAndFunction booleanAndFunction= new BooleanAndFunction();
+        List<SelectionFunctionAbstract> selVar= new ArrayList<>();
+
+
+
+        if(ctx.getChildCount()>1){
+            selVar.add(visit(ctx.getChild(0)));
+        }
+        else{
+            for(int i=0; i<ctx.getChildCount()+1;i+=2){
+                selVar.add(visit(ctx.getChild(i)));
+            }
+
+        }
+        booleanAndFunction.addBooleanAndExpression(selVar);
+        return booleanAndFunction;
     }
 
     @Override
-    public SelectionFunction visitUnaryExpression(PatternParser.UnaryExpressionContext ctx) {
-        return super.visitUnaryExpression(ctx);
+    public SelectionFunctionAbstract visitUnaryExpression(PatternParser.UnaryExpressionContext ctx) {
+        UnaryExpression unaryExpression= new UnaryExpression();
+
+        if(ctx.getChildCount()>1){
+            unaryExpression.addExpression(true, visit(ctx.getChild(1)));
+        }else{
+            unaryExpression.addExpression(visit(ctx.getChild(0)));
+        }
+
+        return unaryExpression;
     }
+
+
+
 
 
     @Override
-    public SelectionFunction visitSelectionFunction(PatternParser.SelectionFunctionContext ctx) {
-        return super.visitSelectionFunction(ctx);
+    public SelectionFunctionAbstract visitPrimaryExpression(PatternParser.PrimaryExpressionContext ctx) {
+        TemporalVariableVisitor temporalVariableVisitor= new TemporalVariableVisitor();
+        PrimaryExpression primaryExpression=new PrimaryExpression();
+        Operator opr=Operator.ERROR;
+        primaryExpression.addnewExpression(temporalVariableVisitor.visit(ctx.getChild(0)),temporalVariableVisitor.visit(ctx.getChild(1)), opr.convertStr2Operator(ctx.getChild(2).getText()));
+        return primaryExpression;
     }
 
 
-    @Override
-    public SelectionFunction visitPrimaryExpression(PatternParser.PrimaryExpressionContext ctx) {
-        return super.visitPrimaryExpression(ctx);
-    }
-
-
-    @Override
-    public SelectionFunction visitOperands(PatternParser.OperandsContext ctx) {
-        return super.visitOperands(ctx);
-    }
-
-
-    public SelectionFunction visitSellabel(PatternParser.SellabelContext ctx) {
-        return super.visitSellabel(ctx);
-    }
-
-    public SelectionFunction visitSelvalue(PatternParser.SelvalueContext ctx) {
-        return super.visitSelvalue(ctx);
-    }
 }

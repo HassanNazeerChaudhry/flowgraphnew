@@ -2,15 +2,17 @@ package shared.model.clauseelement.graphproc.selelements;
 
 import java.util.List;
 
-public class LogicalExpression extends SelectionFunction{
-    private List<BooleanAndFunction> selVar;
+public class LogicalExpression extends SelectionFunctionAbstract {
+    private List<SelectionFunctionAbstract> selVar;
 
     public LogicalExpression() {
     }
 
-    public LogicalExpression(List<BooleanAndFunction> selVar) {
-        this.selVar = selVar;
+
+    public void addLogicalExpression(List<SelectionFunctionAbstract> selVar){
+       this.selVar=selVar;
     }
 }
+
 
 

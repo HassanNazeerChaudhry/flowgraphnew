@@ -1,4 +1,8 @@
 package shared.model.clauseelement.graphproc.selelements;
 
-public class SelOperands extends SelectionFunctionAbstract {
+public abstract class SelectionFunctionAbstract {
+
+
+
+
 }

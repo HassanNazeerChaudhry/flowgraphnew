@@ -76,7 +76,7 @@ selectionFunction
     ;
 
 edgeSelection
-    :   'EDGE[' (logicalExpression ) ']'
+    :   'EDGE[' logicalExpression  ']'
     ;
 
 logicalExpression
@@ -96,7 +96,7 @@ primaryExpression
      ;
 
 operands
-    : (sellabel  | selvalue)
+    : (label  | value)
     ;
 
 //..............................................
@@ -117,7 +117,7 @@ oneFieldOperationAlias
     ;
 
 emission
-    :   '.emit(' variable ')'-
+    :   '.emit(' variable ')'
     ;
 
 temporalVariable
@@ -129,17 +129,6 @@ temporalVariable
 functionName
     :   Litterals
     ;
-
-sellabel
- :   Litterals
-    ;
-
-
-selvalue
-:   '\''Litterals '\''
-    ;
-
-
 
 label
     :   Litterals

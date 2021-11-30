@@ -1,12 +1,12 @@
 package shared.model.clauseelement.graphproc;
-import shared.model.clauseelement.graphproc.selelements.SelectionFunction;
+import shared.model.clauseelement.graphproc.selelements.SelectionFunctionAbstract;
 
 import java.util.List;
 
 public class Selection extends ProcElement {
-    List<SelectionFunction> selVar;
+    List<SelectionFunctionAbstract> selVar;
 
-    public Selection(List<SelectionFunction> selVar) {
+    public Selection(List<SelectionFunctionAbstract> selVar) {
         this.selVar = selVar;
     }
 
@@ -15,7 +15,7 @@ public class Selection extends ProcElement {
     }
 
 
-    public void addSelectionFunction (SelectionFunction selectionFunction){
+    public void addSelectionFunction (SelectionFunctionAbstract selectionFunction){
         selVar.add(selectionFunction);
 
 

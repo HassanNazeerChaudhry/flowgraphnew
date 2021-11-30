@@ -4,7 +4,7 @@ package shared.model.clauseelement.graphproc.selelements;
 import shared.model.enumerators.Operator;
 import shared.variables.Operands;
 
-public class BooleanPredicate extends  SelectionFunction {
+public class BooleanPredicate extends SelectionFunctionAbstract {
 
 
     private Operands op1;

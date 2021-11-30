@@ -1,30 +1,32 @@
 package shared.model.clauseelement.graphproc.selelements;
 
-public class PrimaryExpression {
-      private LogicalExpression exp;
-      private BooleanPredicate predicate;
+import shared.model.enumerators.Operator;
+import shared.variables.Operands;
 
-    public PrimaryExpression(LogicalExpression exp, BooleanPredicate predicate) {
-        this.exp = exp;
-        this.predicate = predicate;
+public class PrimaryExpression extends SelectionFunctionAbstract {
+
+      private Operands opr1;
+       private Operands opr2;
+      private Operator op;
+
+    public PrimaryExpression(Operands opr1, Operands opr2, Operator op) {
+        this.opr1 = opr1;
+        this.opr2 = opr2;
+        this.op = op;
     }
 
-    public LogicalExpression getExp() {
-        return exp;
-    }
 
-    public BooleanPredicate getPredicate() {
-        return predicate;
+    public PrimaryExpression() {
     }
 
 
-    public void setExp(LogicalExpression exp) {
-        this.exp = exp;
+    public void addnewExpression(Operands opr1,  Operands opr2, Operator op){
+      this.opr1=opr1;
+      this.opr2=opr2;
+      this.op=op;
     }
 
-    public void setPredicate(BooleanPredicate predicate) {
-        this.predicate = predicate;
-    }
+
 }
 
 

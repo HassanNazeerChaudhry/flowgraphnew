@@ -10,7 +10,7 @@ import java.util.List;
 public class OperationalFunction extends  OpFuncAbstract {
    StreamingOperators streamingOperators=StreamingOperators.ERROR;
    String functionName;
-   List<TupleField> tupleFields= new ArrayList<>();
+   TupleField tupleFields;
    Ops operator= Ops.ERROR;
 
 
@@ -23,16 +23,16 @@ public class OperationalFunction extends  OpFuncAbstract {
    }
 
    public OperationalFunction(TupleField tupleFields, Ops operator) {
-      this.tupleFields.add(tupleFields);
+      this.tupleFields=tupleFields;
       this.operator = operator;
    }
 
-   public OperationalFunction(StreamingOperators streamingOperators, List<TupleField> tupleFields) {
+   public OperationalFunction(StreamingOperators streamingOperators, TupleField tupleFields) {
       this.streamingOperators = streamingOperators;
       this.tupleFields = tupleFields;
    }
 
-   public OperationalFunction(StreamingOperators streamingOperators, String functionName, List<TupleField> tupleFields) {
+   public OperationalFunction(StreamingOperators streamingOperators, String functionName, TupleField tupleFields) {
       this.streamingOperators = streamingOperators;
       this.functionName = functionName;
       this.tupleFields = tupleFields;

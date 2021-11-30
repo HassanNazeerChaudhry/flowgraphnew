@@ -106,10 +106,10 @@ partitionFunction
     ;
 
 operationFunction
-    :   ( '.map' | '.flatmap' | '.reduce' | '.filter' ) '(' functionName (tupleField (',' tupleField)*)? ')'
-    |   ('.groupby' | '.Merge') '(' tupleField (',' tupleField)* ')'
+    :   ( '.map' | '.flatmap' | '.reduce' | '.filter' ) '(' functionName  tupleField ')'
+    |   ('.groupby' | '.Merge') '(' tupleField ')'
     |   '.collect'
-    |   ( '.avg' | '.max' | '.min' | '.count' | '.select' ) ('(' tupleField ')')?
+    |   ( '.avg' | '.max' | '.min' | '.count' | '.select' ) '(' tupleField ')'
     ;
 
 

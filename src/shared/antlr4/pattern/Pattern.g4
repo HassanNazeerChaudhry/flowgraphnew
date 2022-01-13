@@ -41,7 +41,7 @@ extraction
     ;
 
 evaluation
-    :   '.evaluate(' Operator ',' value ',' fireEvent ')'
+    :   '.evaluate(' Operator ',' value  ')'
     ;
 
 followedBy: '.followedBy(' temporalVariable ')'
@@ -139,9 +139,6 @@ variable
     :   '$' Litterals
     ;
 
-fireEvent
-    :   '"' Litterals '"'
-    ;
 
 tupleField
     :   Litterals ('.' Litterals)*

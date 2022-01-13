@@ -4,7 +4,6 @@ import shared.antlr4.pattern.PatternBaseVisitor;
 import shared.antlr4.pattern.PatternParser;
 import shared.model.clauseelement.OpFuncAbstract;
 import shared.model.clauseelement.OperationalFunction;
-import shared.model.enumerators.Ops;
 import shared.model.enumerators.StreamingOperators;
 import shared.variables.TupleField;
 

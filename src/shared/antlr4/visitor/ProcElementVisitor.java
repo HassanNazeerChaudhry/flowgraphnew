@@ -2,7 +2,6 @@ package shared.antlr4.visitor;
 
 import shared.antlr4.pattern.PatternBaseVisitor;
 import shared.antlr4.pattern.PatternParser;
-import shared.model.ClauseElement;
 import shared.model.clauseelement.graphproc.Computation;
 import shared.model.clauseelement.graphproc.Partition;
 import shared.model.clauseelement.graphproc.ProcElement;

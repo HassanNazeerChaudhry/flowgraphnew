@@ -3,10 +3,6 @@ package shared.antlr4.visitor;
 import shared.antlr4.pattern.PatternBaseVisitor;
 import shared.antlr4.pattern.PatternParser;
 import shared.model.Pattern;
-import shared.model.PatternElement;
-
-import java.util.ArrayList;
-import java.util.List;
 
 
 public class PatternEntryVisitor  extends PatternBaseVisitor<Pattern> {
@@ -18,11 +14,11 @@ public class PatternEntryVisitor  extends PatternBaseVisitor<Pattern> {
         PatternElementVisitor patternElementVisitor=new PatternElementVisitor();
 
 
-        for(int i=0; i<ctx.getChildCount()+1; i++){
-            if(i==ctx.getChildCount()-1){
-                //EOF , do nothing
+        for(int i=0; i<ctx.getChildCount(); i++){
+            if(i==0){
+                pattern.addExpression(patternElementVisitor.visit(ctx.getChild(i)));
             }else{
-              pattern.addExpression(patternElementVisitor.visit(ctx.getChild(i)));
+                //EOF , do nothing
             }
 
         }

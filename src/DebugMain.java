@@ -15,14 +15,7 @@ public class DebugMain {
     // the main function body
     public static void main(String[] args) {
 
-
-
-      //  if (args.length!=1) {
-        //    System.err.print("Usage: file Name");
-        //  } else {
-
-         // String fileName=args[0];
-          String fileName="test1.txt";
+          String fileName="src/resources/test3.txt";
           PatternParser parser=getParser(fileName);
           //tell antlr to build a parse tree parse from start symbol 'Pattern'
            ParseTree antlrAST= parser.patternEntry();
@@ -30,7 +23,7 @@ public class DebugMain {
            Pattern pattern= patternEntryVisitor.visit(antlrAST);
            int a=2;
 
-        //  }
+
 
     }
 

@@ -1,6 +1,6 @@
 package shared.model.clauseelement.graphproc.compelements;
 
-public class ComputationalVariable extends ComputationalElements {
+public class ComputationalVariable {
     private String varName;
 
 

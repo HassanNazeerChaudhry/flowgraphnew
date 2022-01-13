@@ -3,6 +3,9 @@ package shared.variables;
 public class Value extends Operands {
   private  int val;
 
+    public Value() {
+    }
+
     public Value(int val) {
         this.val = val;
     }

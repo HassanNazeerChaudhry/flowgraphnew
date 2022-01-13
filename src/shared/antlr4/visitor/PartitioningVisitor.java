@@ -3,8 +3,6 @@ package shared.antlr4.visitor;
 import shared.antlr4.pattern.PatternBaseVisitor;
 import shared.antlr4.pattern.PatternParser;
 import shared.model.clauseelement.graphproc.partitioningelements.PartitioningElements;
-import shared.model.patternelements.TemporalClause;
-import shared.variables.Operands;
 
 public class PartitioningVisitor extends PatternBaseVisitor<PartitioningElements> {
 

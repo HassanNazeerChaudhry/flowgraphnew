@@ -2,7 +2,7 @@ package shared.model.clauseelement.graphproc.compelements;
 
 import shared.computations.Computations;
 
-public class FunctionName extends ComputationalElements {
+public class FunctionName  {
 
     String computationName;
 

@@ -3,13 +3,12 @@ package shared.antlr4.visitor;
 import shared.antlr4.pattern.PatternBaseVisitor;
 import shared.antlr4.pattern.PatternParser;
 import shared.model.ClauseElement;
-import shared.model.clauseelement.GraphModification;
+import shared.model.clauseelement.*;
 import shared.model.enumerators.Change;
 import shared.model.enumerators.Modifier;
 import shared.model.enumerators.Operator;
-import shared.model.clauseelement.Evaluation;
-import shared.model.clauseelement.Extraction;
-import shared.model.clauseelement.GraphProcessing;
+import shared.variables.Operands;
+import shared.variables.Value;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -27,7 +26,7 @@ public class ClauseElementVisitor   extends PatternBaseVisitor<ClauseElement> {
     public ClauseElement visitGraphProcessing(PatternParser.GraphProcessingContext ctx) {
         ProcElementVisitor procElementVisitor= new ProcElementVisitor();
         GraphProcessing graphProcessing= new GraphProcessing();
-        graphProcessing.addProcElement(procElementVisitor.visit(ctx.getChild(0)));
+        graphProcessing.addProcElement(procElementVisitor.visit(ctx.getChild(1)));
         return graphProcessing;
 
     }
@@ -39,12 +38,12 @@ public class ClauseElementVisitor   extends PatternBaseVisitor<ClauseElement> {
         boolean isVertexExtraction=false;
         boolean isEdgeExtraction=false;
         List<String> labelCollection= new ArrayList<>();
+        String extractType=ctx.getChild(0).getText();
 
-
-        if (ctx.getChild(0).equals(".extractV(")) {
+        if (extractType.equals(".extractV(")) {
             isVertexExtraction= true;
             isEdgeExtraction   =false;
-        } else if (ctx.getChild(0).equals(".extractE(")) {
+        } else if (extractType.equals(".extractE(")) {
             isVertexExtraction= false;
             isEdgeExtraction   =true;
         }
@@ -76,8 +75,17 @@ public class ClauseElementVisitor   extends PatternBaseVisitor<ClauseElement> {
     public ClauseElement visitEvaluation(PatternParser.EvaluationContext ctx) {
         Evaluation evaluation= new Evaluation();
         Operator opr=Operator.ERROR;
-        int value=Integer.parseInt(ctx.getChild(3).getText());
-        evaluation.addEvaluation(opr.convertStr2Operator(ctx.getChild(1).getText()),value, ctx.getChild(5).getText() );
+
+
+        TemporalVariableVisitor temporalVariableVisitor= new TemporalVariableVisitor();
+        Operands operand= temporalVariableVisitor.visit(ctx.getChild(5));
+        Value val=(Value) operand;
+        int value=val.getVal();
+        Operator operator = opr.convertStr2Operator(ctx.getChild(2).getText());
+
+        evaluation.addEvaluation(operator, value);
+
+
         return evaluation;
     }
 

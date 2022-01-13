@@ -18,17 +18,9 @@ public class PatternElementVisitor extends PatternBaseVisitor<PatternElement> {
         TemporalClause temporalClause=new TemporalClause();
 
        if(ctx.getChildCount()>1){
-           temporalClause.addClauseElements(clauseElementVisitor.visit(ctx.getChild(0)));   // graphProcessing
-           temporalClause.addClauseElements(clauseElementVisitor.visit(ctx.getChild(1))); // extraction
-
-        //operational function
-        for(int i=2; i<ctx.getChildCount()-1; i++ ){
-            temporalClause.addClauseElements(clauseElementVisitor.visit(ctx.getChild(i)));
-        }
-
-
-           temporalClause.addClauseElements(clauseElementVisitor.visit(ctx.getChild(ctx.getChildCount()-1)));     //evaluation
-
+           for(int i=0; i<ctx.getChildCount(); i++ ){
+               temporalClause.addClauseElements(clauseElementVisitor.visit(ctx.getChild(i)));
+           }
 
        }else{ // graphModificationEvent
 

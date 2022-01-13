@@ -7,19 +7,16 @@ import java.util.List;
 
 public class Computation extends ProcElement {
 
-    List<ComputationalElements> compVar;
+    ComputationalElements computationalElements;
 
     public Computation() {
     }
 
-    public Computation(List<ComputationalElements> compVar) {
-        this.compVar = compVar;
+    public Computation(ComputationalElements computationalElements) {
+        this.computationalElements = computationalElements;
     }
 
-    public void addComputationElement(ComputationalElements computationalElement){
-        compVar.add(computationalElement);
-
-    }
-
-
+   public void addComputationElement(ComputationalElements computationalElements){
+        this.computationalElements=computationalElements;
+   }
 }

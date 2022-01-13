@@ -1,1 +1,1 @@
-g().select(label > '10' or lab1 == '5').extractV(label).emit($res);
+g().compute(PageRank , $varRet, [ maxIterations = '100'] ).select(label > '10' or lab1 == '5').extractV(label).emit($res);

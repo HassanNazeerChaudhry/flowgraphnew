@@ -10,7 +10,7 @@ patternEntry
 
 
 temporalClause
-    :   graphProcessing extraction (operationFunction)* evaluation  #GraphProc
+    :   graphProcessing selection extraction (operationFunction)* evaluation  #GraphProc
     |   graphModificationEvent #GraphModf
     ;
 

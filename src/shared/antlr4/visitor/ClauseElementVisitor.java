@@ -20,8 +20,6 @@ public class ClauseElementVisitor   extends PatternBaseVisitor<ClauseElement> {
 
     }
 
-
-
     @Override
     public ClauseElement visitGraphProcessing(PatternParser.GraphProcessingContext ctx) {
         ProcElementVisitor procElementVisitor= new ProcElementVisitor();

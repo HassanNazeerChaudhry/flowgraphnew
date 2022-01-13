@@ -15,8 +15,8 @@ public class DebugMain {
     // the main function body
     public static void main(String[] args) {
 
-          String fileName="src/resources/test3.txt";
-          PatternParser parser=getParser(fileName);
+           String fileName="src/resources/test2.txt";
+           PatternParser parser=getParser(fileName);
           //tell antlr to build a parse tree parse from start symbol 'Pattern'
            ParseTree antlrAST= parser.patternEntry();
            PatternEntryVisitor patternEntryVisitor= new PatternEntryVisitor();

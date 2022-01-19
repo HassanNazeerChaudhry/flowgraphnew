@@ -18,8 +18,6 @@ public class JobManagerActor extends AbstractActorWithStash {
     private final LoggingAdapter log = Logging.getLogger(getContext().getSystem(), this);
     public Boolean directedEdges = true;
 
-
-
     /** Ref to slave and associated number of threads  */
     private final Map<ActorRef, Integer> slaves = new HashMap<>();
 

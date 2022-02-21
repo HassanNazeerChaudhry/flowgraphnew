@@ -1,13 +1,16 @@
 package client;
 
 import akka.actor.AbstractActor;
-import akka.actor.AbstractActorWithStash;
 import akka.actor.ActorSelection;
 import akka.actor.Props;
 import akka.event.Logging;
 import akka.event.LoggingAdapter;
 import shared.PropertyHandler;
 import shared.messages.HelloClientMsg;
+import shared.messages.LaunchMsg;
+import shared.messages.TerminateMsg;
+
+import java.io.Serializable;
 
 public class ClientActor extends AbstractActor {
 
@@ -32,15 +35,36 @@ public class ClientActor extends AbstractActor {
     }
 
 
+
     @Override
     public Receive createReceive() {
         return receiveBuilder(). //
                 match(HelloClientMsg.class, this::onHelloClientMsg).
+                match(LaunchMsg.class, this::onStartMsg).
+                match(Serializable.class, this::onUpdateGraphMsg).
+                match(TerminateMsg.class, this::onTerminateMsg).
                 build();
     }
 
     private final void onHelloClientMsg(HelloClientMsg msg) {
         log.info("HelloClientMsg");
+        jobManager.tell(msg, self());
+    }
+
+
+    private final void onStartMsg(LaunchMsg msg) {
+        log.info("StartMsg");
+        jobManager.tell(msg, self());
+    }
+
+    private final void onTerminateMsg(TerminateMsg msg) {
+        log.info("TerminateMsg");
+        jobManager.tell(msg, self());
+    }
+
+
+    private final void onUpdateGraphMsg(Serializable msg) {
+        log.info(msg.toString());
         jobManager.tell(msg, self());
     }
 

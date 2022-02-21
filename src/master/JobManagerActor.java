@@ -6,7 +6,11 @@ import akka.actor.Props;
 import akka.event.Logging;
 import akka.event.LoggingAdapter;
 import shared.PropertyHandler;
-import shared.messages.*;
+import shared.messages.AckMsg;
+import shared.messages.HelloClientMsg;
+import shared.messages.LaunchMsg;
+import shared.messages.SlaveAnnounceMsg;
+
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.HashMap;
@@ -91,17 +95,12 @@ public class JobManagerActor extends AbstractActorWithStash {
     }
 
 
-
-
     /**
      * Props for this actor
      */
     public static final Props props() {
         return Props.create(JobManagerActor.class);
     }
-
-
-
 
 
 }

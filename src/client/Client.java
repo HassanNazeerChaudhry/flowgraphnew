@@ -5,15 +5,14 @@ import akka.actor.ActorSystem;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
 import com.typesafe.config.ConfigValueFactory;
-import org.apache.flink.api.java.Utils;
 import org.apache.flink.api.java.utils.ParameterTool;
 import shared.PropertyHandler;
+import shared.antlr4.InputParser;
 import shared.messages.HelloClientMsg;
-import shared.messages.LaunchMsg;
 import shared.UtilLib;
+import shared.messages.TerminateMsg;
 
 import java.io.*;
-import java.util.Scanner;
 
 public class Client {
     public static void main(String[] args) throws IOException {
@@ -39,7 +38,45 @@ public class Client {
 
         clientActor.tell(new HelloClientMsg(), ActorRef.noSender());
 
+        try {
+               automaticMode(clientActor);
 
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        clientActor.tell(new TerminateMsg(), ActorRef.noSender());
     }
+
+
+
+    private static void automaticMode(ActorRef clientActor) throws IOException {
+
+        int numRecords = Integer.parseInt(PropertyHandler.getProperty("numRecordsAsInput"));
+        long numTotalRecords = UtilLib.countLines(PropertyHandler.getProperty("datasetPath"));
+        try {
+
+            BufferedReader lineReader = new BufferedReader(new FileReader(PropertyHandler.getProperty("datasetPath")));
+
+            for (int i = 0; i < (numTotalRecords-numRecords-1); i++) {
+                lineReader.readLine();
+            }
+
+            for (int i = (int)(numTotalRecords-numRecords-1); i < numTotalRecords; i++) {
+                String line = lineReader.readLine();
+                if (line!=null && !line.trim().equals("")) {
+                    Serializable parsedMessage = InputParser.parse(line);
+                    if (parsedMessage == null) throw new NullPointerException(line);
+                    clientActor.tell(parsedMessage, ActorRef.noSender());
+                }
+
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            System.err.println("Parsing error, no other messages are sent to task manager");
+        }
+    }
+
+
 
 }

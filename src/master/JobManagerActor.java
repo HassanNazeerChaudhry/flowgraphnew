@@ -8,10 +8,7 @@ import akka.event.LoggingAdapter;
 import akka.japi.Pair;
 import shared.PropertyHandler;
 import shared.UtilLib;
-import shared.messages.AckMsg;
-import shared.messages.HelloClientMsg;
-import shared.messages.LaunchMsg;
-import shared.messages.SlaveAnnounceMsg;
+import shared.messages.*;
 import shared.messages.graphChanges.*;
 
 
@@ -119,7 +116,7 @@ public class JobManagerActor extends AbstractActorWithStash {
             }
         }
         //endregion
-
+        sendToAllSlaves(new DistributeHashMapMsg(hashMapping));
 
         nextState = this::receiveChangeState;
 
@@ -189,6 +186,11 @@ public class JobManagerActor extends AbstractActorWithStash {
     @FunctionalInterface
     public interface State{
         Receive invoke();
+    }
+
+    public <Msg extends Serializable> void sendToAllSlaves(Msg message) {
+        this.slaves.keySet().stream().forEach(slave -> slave.tell(message, self()));
+        log.info(message + " sent to all slaves");
     }
 
 

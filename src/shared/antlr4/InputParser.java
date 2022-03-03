@@ -1,20 +1,20 @@
 package shared.antlr4;
 
-import akka.japi.Pair;
 import org.apache.flink.api.java.tuple.Tuple3;
 import org.antlr.v4.runtime.*;
-import shared.antlr4.input.CommandsBaseVisitor;
-import shared.antlr4.input.CommandsLexer;
-import shared.antlr4.input.CommandsParser;
-import shared.messages.graphChanges.*;
+import shared.antlr4.input.*;
+import shared.graph.Edge;
+import shared.graph.GraphState;
+import shared.graph.Vertex;
+import shared.messages.graphchanges.*;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
-
+import java.util.Map;
 
 public class InputParser extends CommandsBaseVisitor {
-
     /**
      * Parse input string and return message to send to JobManager
      * @param inputString
@@ -45,7 +45,9 @@ public class InputParser extends CommandsBaseVisitor {
     @Override public Serializable visitUpdateCommand(CommandsParser.UpdateCommandContext ctx) {
 
         final Long timestamp = visitTimestamp(ctx.timestamp());
-        final ArrayList<Pair<String, String[]>> state = visitLabelValues(ctx.labelValues());
+        final Map<String, String[]> state = visitLabelValues(ctx.labelValues());
+
+
 
         if (ctx.vertexUpdate() == null) { //EDGE
 
@@ -53,22 +55,18 @@ public class InputParser extends CommandsBaseVisitor {
 
             if (edgeOptions.f1.equals("insert")) {
                 return new AddEdgeMsg(
-                        edgeOptions.f2.get(0),
-                        edgeOptions.f2.get(1),
-                        state,
+                        new Edge(edgeOptions.f2.get(0), edgeOptions.f2.get(1),new GraphState(state)),
                         timestamp
                 );
+
             } else if (edgeOptions.f1.equals("update")) {
                 return new UpdateEdgeMsg(
-                        edgeOptions.f2.get(0),
-                        edgeOptions.f2.get(1),
-                        state,
+                        new Edge(edgeOptions.f2.get(0), edgeOptions.f2.get(1),new GraphState(state)),
                         timestamp
                 );
             } else if (edgeOptions.f1.equals("delete")) {
-                return new DeleteEdgeMsg(
-                        edgeOptions.f2.get(0),
-                        edgeOptions.f2.get(1),
+                return new DelEdgeMsg(
+                        new Edge(edgeOptions.f2.get(0), edgeOptions.f2.get(1),new GraphState(state)),
                         timestamp
                 );
             }
@@ -79,20 +77,19 @@ public class InputParser extends CommandsBaseVisitor {
 
             if (vertexOptions.f1.equals("update")) {
                 return new UpdateVertexMsg(
-                        vertexOptions.f2,
-                        state,
-                        timestamp,
-                        false);
+                        new Vertex(vertexOptions.f2,new GraphState(state)),
+                        timestamp
+                );
+
             } else if (vertexOptions.f1.equals("insert")) {
-                return new UpdateVertexMsg(
-                        vertexOptions.f2,
-                        state,
-                        timestamp,
-                        true);
+                return new AddVertexMsg(
+                        new Vertex(vertexOptions.f2,new GraphState(state)),
+                        timestamp
+                );
             }
             else if (vertexOptions.f1.equals("delete")) {
-                return new DeleteVertexMsg(
-                        vertexOptions.f2,
+                return new DelVertexMsg(
+                        new Vertex(vertexOptions.f2,new GraphState(state)),
                         timestamp
                 );
             }
@@ -125,23 +122,22 @@ public class InputParser extends CommandsBaseVisitor {
     /**
      * @return generate multivalue state
      */
-    @Override public ArrayList<Pair<String, String[]>> visitLabelValues(CommandsParser.LabelValuesContext ctx) {
+    @Override public Map<String, String[]> visitLabelValues(CommandsParser.LabelValuesContext ctx) {
 
         if (ctx == null) {
-            return new ArrayList<>();
+            return new HashMap<>();
         }
 
         final List<CommandsParser.IdentifierContext> identifiers = ctx.identifier();
         final List<CommandsParser.ValueContext> values = ctx.value();
 
-        ArrayList<Pair<String, String[]>> state = new ArrayList<>();
+        Map<String, String[]> state = new HashMap<>();
 
         for (int i = 0; i < identifiers.size(); i++) {
-            state.add(new Pair<>(
-                            visitIdentifier(identifiers.get(i)),
-                            visitValue(values.get(i))
-                    )
-            );
+            state.put(visitIdentifier(identifiers.get(i)),visitValue(values.get(i)));
+
+
+
         }
 
         return state;
@@ -190,8 +186,4 @@ public class InputParser extends CommandsBaseVisitor {
     @Override public String visitLitterals(CommandsParser.LitteralsContext ctx) {
         return ctx.getText();
     }
-
-
-
-
 }

@@ -5,12 +5,9 @@ import akka.actor.ActorSelection;
 import akka.actor.Props;
 import akka.event.Logging;
 import akka.event.LoggingAdapter;
-import shared.PropertyHandler;
-import shared.messages.HelloClientMsg;
-import shared.messages.LaunchMsg;
-import shared.messages.TerminateMsg;
+import shared.messages.StartMsg;
+import shared.messages.graphchanges.*;
 
-import java.io.Serializable;
 
 public class ClientActor extends AbstractActor {
 
@@ -20,6 +17,7 @@ public class ClientActor extends AbstractActor {
     private final String jobManagerAddr;
     private ActorSelection jobManager = null;
 
+
     private ClientActor(String jobManagerAddr) {
         this.jobManagerAddr = jobManagerAddr;
     }
@@ -28,52 +26,34 @@ public class ClientActor extends AbstractActor {
     public void preStart() throws Exception {
         super.preStart();
         jobManager = getContext().actorSelection(jobManagerAddr);
-
-        if (!Boolean.parseBoolean(PropertyHandler.getProperty("debugLog"))) {
-            getContext().getSystem().eventStream().setLogLevel(0);
-        }
     }
-
 
 
     @Override
     public Receive createReceive() {
-        return receiveBuilder(). //
-                match(HelloClientMsg.class, this::onHelloClientMsg).
-                match(LaunchMsg.class, this::onStartMsg).
-                match(Serializable.class, this::onUpdateGraphMsg).
-                match(TerminateMsg.class, this::onTerminateMsg).
+        return receiveBuilder().
+                match(StartMsg.class, this::OnClientStartMessage).
+                match(ChangeEdgeMsg.class,this::onChangeEdgeMsg).
+                match(ChangeVertexMsg.class, this::onChangeVertexMsg).
                 build();
     }
 
-    private final void onHelloClientMsg(HelloClientMsg msg) {
-        log.info("HelloClientMsg");
+
+
+    public void OnClientStartMessage(StartMsg msg){
+        log.info("StartClientMsg at client");
+        jobManager.tell(msg, self());
+    }
+
+    public void onChangeEdgeMsg(ChangeEdgeMsg msg){
+        log.info("ChangeEdgeMsg at client");
         jobManager.tell(msg, self());
     }
 
 
-    private final void onStartMsg(LaunchMsg msg) {
-        log.info("StartMsg");
+    public void onChangeVertexMsg(ChangeVertexMsg msg){
+        log.info("ChangeVertexMsg at client");
         jobManager.tell(msg, self());
-    }
-
-    private final void onTerminateMsg(TerminateMsg msg) {
-        log.info("TerminateMsg");
-        jobManager.tell(msg, self());
-    }
-
-
-    private final void onUpdateGraphMsg(Serializable msg) {
-        log.info(msg.toString());
-        jobManager.tell(msg, self());
-    }
-
-
-
-    @Override
-    public void postStop() throws Exception {
-        PropertyHandler.exit();
-        super.postStop();
     }
 
 
@@ -82,6 +62,7 @@ public class ClientActor extends AbstractActor {
         return Props.create(ClientActor.class, jobManagerAddr);
     }
 
-
-
 }
+
+
+

@@ -10,7 +10,10 @@ public class Vertex implements Serializable {
     private final GraphState state;
     private Boolean isDeleted;
 
-
+    public Vertex() {
+        this.name = "";
+        this.state=new GraphState();
+    }
 
     public Vertex(String name, String destination) {
         this.name = name;

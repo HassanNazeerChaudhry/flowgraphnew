@@ -11,6 +11,12 @@ public class Edge implements Serializable {
     private final GraphState state;
     private Boolean isDeleted;
 
+    public Edge() {
+        this.source = "";
+        this.destination = "";
+        this.state=new GraphState();
+        this.isDeleted=false;
+    }
 
     public Edge(String source, String destination) {
         this.source = source;

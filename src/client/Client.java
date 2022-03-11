@@ -4,18 +4,27 @@ import akka.actor.ActorRef;
 import akka.actor.ActorSystem;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigValueFactory;
+import org.antlr.v4.runtime.tree.ParseTree;
 import org.apache.flink.api.java.utils.ParameterTool;
 import shared.antlr4.InputParser;
+
+import shared.antlr4.pattern.PatternParser;
+import shared.antlr4.visitor.PatternEntryVisitor;
+import shared.computations.trianglecounting.NamesSet;
+import shared.computations.trianglecounting.TraingleCounting;
+import shared.messages.vertexcentric.InstallComputationMsg;
 import shared.messages.StartMsg;
 import shared.PropertyHandler;
 import shared.Utils;
 import com.typesafe.config.ConfigFactory;
 import shared.messages.graphchanges.*;
+import shared.model.Pattern;
 
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.HashSet;
 
 public class Client {
 
@@ -33,6 +42,17 @@ public class Client {
         final ActorSystem sys = ActorSystem.create("Client", conf);
         final ActorRef clientActor;
 
+
+        //reading pattern file and passing it through antlr
+      /*  String fileName="src/resources/test2.txt";
+        PatternParser parser=Utils.getParser(fileName);
+        //tell antlr to build a parse tree parse from start symbol 'Pattern'
+        ParseTree antlrAST= parser.patternEntry();
+        PatternEntryVisitor patternEntryVisitor= new PatternEntryVisitor();
+        Pattern pattern= patternEntryVisitor.visit(antlrAST);*/
+
+
+
         if (Utils.waitConnection(jobManagerAddr, jobManagerPort, null)) {
             clientActor = sys.actorOf(ClientActor.props(jobManager), "Client");
         } else {
@@ -40,6 +60,10 @@ public class Client {
         }
 
         clientActor.tell(new StartMsg(), ActorRef.noSender());
+
+        final InstallComputationMsg<NamesSet, HashSet<HashSet<String>>> compMsg = new InstallComputationMsg<>("TraingleCounting",
+                () -> new TraingleCounting());
+        clientActor.tell(compMsg, ActorRef.noSender());
 
 
         BufferedReader reader;
@@ -87,36 +111,10 @@ public class Client {
         //endregion
 
 
-
-        /* String fileName="src/resources/test2.txt";
-          PatternParser parser=getParser(fileName);
-          //tell antlr to build a parse tree parse from start symbol 'Pattern'
-         ParseTree antlrAST= parser.patternEntry();
-         PatternEntryVisitor patternEntryVisitor= new PatternEntryVisitor();
-         Pattern pattern= patternEntryVisitor.visit(antlrAST);
-         int a=2;*/
-
-/*
-           private static PatternParser getParser(String fName){
-        PatternParser patternParser=null;
-
-
-        try {
-            CharStream input= CharStreams.fromFileName(fName);
-            PatternLexer lexer= new PatternLexer(input);
-            CommonTokenStream tokens= new CommonTokenStream(lexer);
-            patternParser=new PatternParser(tokens);
-
-
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-
-        return patternParser;
-    }*/
-
-
     }
+
+
+
+
 
 }

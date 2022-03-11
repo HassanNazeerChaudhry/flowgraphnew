@@ -7,6 +7,10 @@ import shared.Utils;
 import shared.messages.TaskManagerInitMsg;
 import shared.messages.TaskManagerAnnounceMsg;
 import shared.messages.graphchanges.*;
+import shared.messages.vertexcentric.InstallComputationMsg;
+import shared.messages.vertexcentric.StartComputationMsg;
+import shared.vertexcentric.InOutboxImpl;
+import shared.vertexcentric.VertexCentricComputation;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -23,11 +27,18 @@ public class TaskManagerActor  extends AbstractActor {
     // Data computed during initialization
     private ActorSelection jobManager;
     private final Map<Integer, ActorRef> workers = new HashMap<>();
+    private VertexCentricComputation computation=null;
 
 
     // Information received from the job manager upon initialization
     private int numAllWorkers;
     private NavigableMap<Integer, ActorRef> taskManagers;
+
+
+    // State for vertex centric computation
+    int numWaitingFor = 0;
+    private InOutboxImpl superstepBox;
+
 
     private TaskManagerActor(String name, int numMyWorkers, String jobManagerAddr) {
         this.name = name;
@@ -66,6 +77,8 @@ public class TaskManagerActor  extends AbstractActor {
         return receiveBuilder().
                 match(ChangeVertexMsg.class, this::onChangeVertexMsg). //
                 match(ChangeEdgeMsg.class, this::onChangeEdgeMsg). //
+                match(InstallComputationMsg.class, this::onInstallComputationMsg). //
+                match(StartComputationMsg.class, this::onStartComputationMsg). //
                 build();
 
     }
@@ -109,6 +122,22 @@ public class TaskManagerActor  extends AbstractActor {
         final int workerId = Utils.computeResponsibleWorkerFor(msg.getSource(), numAllWorkers);
         workers.get(workerId).forward(msg, getContext());
     }
+
+
+
+    private final void onInstallComputationMsg(InstallComputationMsg msg){
+        log.info(msg.toString());
+        computation=(VertexCentricComputation) msg.getComputationSupplier().get();
+        this.workers.values().stream().forEach(workers -> workers.tell(msg, self()));
+    }
+
+    private final void onStartComputationMsg(StartComputationMsg msg) {
+        log.info(msg.toString());
+        workers.values().forEach(worker -> worker.tell(msg, self()));
+        numWaitingFor = workers.size();
+        superstepBox = new InOutboxImpl<>();
+    }
+
 
 
 

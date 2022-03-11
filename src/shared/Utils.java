@@ -4,7 +4,13 @@ package shared;
 
 import client.Client;
 
+import org.antlr.v4.runtime.CharStream;
+import org.antlr.v4.runtime.CharStreams;
+import org.antlr.v4.runtime.CommonTokenStream;
 import org.jetbrains.annotations.Nullable;
+import shared.antlr4.pattern.PatternLexer;
+import shared.antlr4.pattern.PatternParser;
+
 import java.io.File;
 import java.io.IOException;
 import java.net.InetAddress;
@@ -66,6 +72,23 @@ public class Utils {
         return vertex.hashCode() % numWorkers;
     }
 
+
+    public static PatternParser getParser(String fName){
+        PatternParser patternParser=null;
+
+
+        try {
+            CharStream input= CharStreams.fromFileName(fName);
+            PatternLexer lexer= new PatternLexer(input);
+            CommonTokenStream tokens= new CommonTokenStream(lexer);
+            patternParser=new PatternParser(tokens);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+
+        return patternParser;
+    }
 
 
 

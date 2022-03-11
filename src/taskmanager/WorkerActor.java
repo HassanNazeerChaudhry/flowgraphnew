@@ -4,14 +4,19 @@ import akka.actor.AbstractActor;
 import akka.actor.Props;
 import akka.event.Logging;
 import akka.event.LoggingAdapter;
-import shared.graph.Edge;
-import shared.graph.Vertex;
+import shared.graph.*;
 import shared.messages.graphchanges.*;
+import shared.messages.vertexcentric.InstallComputationMsg;
+import shared.messages.vertexcentric.StartComputationMsg;
+import shared.vertexcentric.InOutboxImpl;
+import shared.vertexcentric.VertexCentricComputation;
 
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Supplier;
 
 public class WorkerActor  extends AbstractActor {
     private final LoggingAdapter log = Logging.getLogger(getContext().getSystem(), this);
@@ -22,6 +27,13 @@ public class WorkerActor  extends AbstractActor {
     //name of edge, <timestamp, set of edges>
     private final Map<String, HashMap<Long, Edge>> edges = new HashMap<>();
 
+
+    // Iterative vertex centric computation
+    private final Map<String, VertexCentricComputation<? extends Serializable, ? extends Serializable>> computations = new HashMap<>();
+    private Supplier<?> computationsSupplier = null;
+
+
+    GraphUtility vertexUtility= new GraphUtility();
 
 
 
@@ -39,8 +51,12 @@ public class WorkerActor  extends AbstractActor {
                 match(AddEdgeMsg.class, this::onAddEdgeMsg). //
                 match(DelEdgeMsg.class, this::onDelEdgeMsg). //
                 match(UpdateEdgeMsg.class, this::onUpdateEdgeMsg). //
+                match(InstallComputationMsg.class, this::onInstallComputationMsg). //
+                match(StartComputationMsg.class, this::onStartComputationMsg). //
                 build();
     }
+
+
 
 
 
@@ -55,11 +71,8 @@ public class WorkerActor  extends AbstractActor {
                 //find if the last state of vertex was deleted
                 vertexTimeCol= vertices.get(msg.getName());
                 Vertex vertex= new Vertex();
-                for(Map.Entry<Long, Vertex> entry: vertexTimeCol.entrySet() ){
-                    vertex=entry.getValue();
-                }
                 //and if it has last delete status
-                if(vertex.getIsDeleted()){
+                if(vertexUtility.isDeletedVertex(vertexTimeCol,vertex)){
                     vertexTimeCol.put(msg.timestamp(), msg.getVertex());
                     vertices.put(msg.getName(), vertexTimeCol);
                 }
@@ -95,12 +108,8 @@ public class WorkerActor  extends AbstractActor {
                 Vertex modVertex= new Vertex();
 
 
-                for(Map.Entry<Long, Vertex> entry: vertexTimeCol.entrySet() ){
-                    modVertex=entry.getValue();
-                }
-
                 //if vertex is already deleted
-                if(modVertex.getIsDeleted()){
+                if(vertexUtility.isDeletedVertex(vertexTimeCol,modVertex)){
                     log.info("Key already deleted");
                 }
                 //otherwise delete the vertex
@@ -137,12 +146,8 @@ public class WorkerActor  extends AbstractActor {
                 vertexTimeCol=vertices.get(msg.getName());
                 Vertex modVertex= new Vertex();
 
-                for(Map.Entry<Long, Vertex> entry: vertexTimeCol.entrySet() ){
-                    modVertex=entry.getValue();
-                }
-
                 //if vertex is already deleted
-                if(modVertex.getIsDeleted()){
+                if(vertexUtility.isDeletedVertex(vertexTimeCol,modVertex)){
                     log.info("Deleted key can't be updated");
                 }
                 //otherwise delete the vertex
@@ -166,6 +171,10 @@ public class WorkerActor  extends AbstractActor {
         log.info(vertices.toString());
     }
 
+
+
+
+
     private final void onAddEdgeMsg(AddEdgeMsg msg) {
 
         try{
@@ -175,12 +184,10 @@ public class WorkerActor  extends AbstractActor {
                 //find if the last state of vertex was deleted
                 edgeTimeCol=  edges.get(msg.getSource());
                 Edge edge= new Edge();
-                for(Map.Entry<Long, Edge> entry: edgeTimeCol.entrySet() ){
-                    edge=entry.getValue();
-                }
+
 
                 //and if it has last delete status
-                if(edge.getIsDeleted()){
+                if(vertexUtility.isDeletedEdge(edgeTimeCol, edge)){
                     edgeTimeCol.put(msg.timestamp(), new Edge(msg.getSource(), msg.getDestination()));
                     edges.put(msg.getSource(), edgeTimeCol);
                 }
@@ -214,13 +221,9 @@ public class WorkerActor  extends AbstractActor {
                 edgeTimeCol=  edges.get(msg.getSource());
                 Edge modEdge= new Edge(msg.getSource(), msg.getDestination());
 
-                for(Map.Entry<Long, Edge> entry: edgeTimeCol.entrySet() ){
-                    modEdge=entry.getValue();
-                }
-
 
                 //if vertex is already deleted
-                if(modEdge.getIsDeleted()){
+                if(vertexUtility.isDeletedEdge(edgeTimeCol, modEdge)){
                     log.info("Key already deleted");
                 }
                 //otherwise delete the vertex
@@ -259,13 +262,8 @@ public class WorkerActor  extends AbstractActor {
                 edgeTimeCol=  edges.get(msg.getSource());
                 Edge modEdge= new Edge(msg.getSource(), msg.getDestination());
 
-                for(Map.Entry<Long, Edge> entry: edgeTimeCol.entrySet() ){
-                    modEdge=entry.getValue();
-                }
-
-
                 //the deleted edge can't be updated
-                if(modEdge.getIsDeleted()){
+                if(vertexUtility.isDeletedEdge(edgeTimeCol, modEdge)){
                     log.info("Deleted key can't be updated");
                 }
                 //otherwise update the edge
@@ -289,6 +287,18 @@ public class WorkerActor  extends AbstractActor {
         log.info(edges.toString());
     }
 
+    private final void onInstallComputationMsg(
+            InstallComputationMsg<? extends Serializable, ? extends Serializable> msg) {
+        log.info("The installation message at worker "+msg.toString());
+        computationsSupplier = msg.getComputationSupplier();
+
+
+    }
+
+    private final void onStartComputationMsg(StartComputationMsg msg) {
+        log.info(msg.toString());
+
+    }
 
 
     public static final Props props(int workerId) {

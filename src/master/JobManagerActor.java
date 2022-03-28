@@ -9,9 +9,8 @@ import shared.Utils;
 import shared.messages.*;
 import shared.messages.graphchanges.*;
 import shared.messages.vertexcentric.*;
-import shared.vertexcentric.InOutboxImpl;
-import shared.vertexcentric.MsgSenderPair;
-import shared.vertexcentric.VertexCentricComputation;
+import shared.vertexcentric.*;
+
 
 import java.util.*;
 
@@ -31,6 +30,11 @@ public class JobManagerActor extends AbstractActorWithStash {
     private Map<Integer, InOutboxImpl> superstepMsgs = new HashMap<>();
     private int receivedReplies = 0;
     private int expectedReplies = 0;
+
+    private List<ResultReplyMsg> msgBuffer = new ArrayList<>();
+    int msgCount = 0;
+
+
 
 
     @Override
@@ -64,6 +68,15 @@ public class JobManagerActor extends AbstractActorWithStash {
     }
 
 
+    private final Receive waitingForReplyState() {
+        return receiveBuilder(). //
+                match(ResultReplyMsg.class, this::onResultReplyMsg). //
+                match(ChangeGraphMsg.class, msg -> stash()). //
+                build();
+    }
+
+
+
 
 
     public void onStartMessage(StartMsg msg){
@@ -85,16 +98,20 @@ public class JobManagerActor extends AbstractActorWithStash {
     }
 
 
-
+   //TODO: find more better partitioning scheme, right now its just hashing
     private final void onChangeVertexMsg(ChangeVertexMsg msg) {
         log.info(msg.toString());
+        //look for the responsbile worker and forward the change vertex messages to it
         int responsibleWorker = Utils.computeResponsibleWorkerFor(msg.getName(), numWorkers);
         final ActorRef taskManager = taskManagers.floorEntry(responsibleWorker).getValue();
         taskManager.forward(msg, getContext());
 
+
         //variables related to graph computation and iterative computation
         expectedReplies = taskManagers.size();
         receivedReplies = 0;
+
+        //start computation message to task manager
         taskManagers.values().forEach(tm -> tm.tell(new StartComputationMsg(msg.timestamp()), self()));
        getContext().become(iterativeComputationState());
     }
@@ -152,15 +169,62 @@ public class JobManagerActor extends AbstractActorWithStash {
 
         receivedReplies++;
 
+        // If all the replies §have been received, start a new superstep (if
+        // necessary)
         if (receivedReplies == expectedReplies) {
-            getContext().become(receiveChangeState());
-            unstashAll();
+            expectedReplies = superstepMsgs.size();
+            // No more supersteps are necessary, send request for result
+
+            if (expectedReplies == 0) {
+                taskManagers. //
+                        values(). //
+                        stream(). //
+                        forEach(tm -> tm.tell(new ResultRequestMsg(), self()));
+                getContext().become(waitingForReplyState());
+            }
+            // Start a new superstep
+            else {
+                final Set<ActorRef> involvedTaskManagers = new HashSet<>();
+                for (final int taskMangerId : superstepMsgs.keySet()) {
+                    final ActorRef taskManager = taskManagers.get(taskMangerId);
+                    involvedTaskManagers.add(taskManager);
+                    final Inbox box = superstepMsgs.get(taskMangerId);
+                    taskManager.tell(new ComputationMsg<>(box, msg.getSuperstep() + 1, true), self());
+                }
+                expectedReplies = involvedTaskManagers.size();
+                receivedReplies = 0;
+                superstepMsgs = new HashMap<>();
+            }
         }
 
 
 
 
     }
+
+
+    private final void onResultReplyMsg(ResultReplyMsg msg) {
+        log.info(msg.toString());
+        //wait for multiple message before aggregation
+
+        msgCount++;
+        if (msgCount==taskManagers.size()) {
+            Set<HashSet<HashSet<String>>> results = new HashSet<>();
+            for (ResultReplyMsg msgb : msgBuffer) {
+                HashSet<HashSet<String>> msgResult = (HashSet<HashSet<String>>) msgb.getResult();
+                results.add(msgResult);
+            }
+            HashSet<HashSet<String>> finalResult = (HashSet<HashSet<String>>) computation.mergeResults(results);
+            msgCount = 0;
+            msgBuffer.clear();
+            getContext().become(receiveChangeState());
+            unstashAll();
+        } else {
+            msgBuffer.add(msg);
+        }
+    }
+
+
 
     /**
      * Props for this actor

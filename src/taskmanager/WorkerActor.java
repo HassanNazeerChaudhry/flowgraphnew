@@ -7,10 +7,7 @@ import akka.event.Logging;
 import akka.event.LoggingAdapter;
 import shared.graph.*;
 import shared.messages.graphchanges.*;
-import shared.messages.vertexcentric.ComputationMsg;
-import shared.messages.vertexcentric.FailedComputationMsg;
-import shared.messages.vertexcentric.InstallComputationMsg;
-import shared.messages.vertexcentric.StartComputationMsg;
+import shared.messages.vertexcentric.*;
 import shared.vertexcentric.InOutboxImpl;
 import shared.vertexcentric.VertexCentricComputation;
 
@@ -55,6 +52,7 @@ public class WorkerActor  extends AbstractActor {
                 match(InstallComputationMsg.class, this::onInstallComputationMsg). //
                 match(StartComputationMsg.class, this::onStartComputationMsg). //
                 match(ComputationMsg.class, this::onComputationMsg). //
+                match(ResultRequestMsg.class, this::onResultRequestMsg). //
                 build();
     }
 
@@ -425,8 +423,6 @@ public class WorkerActor  extends AbstractActor {
                     final Set results = new HashSet<>();
 
 
-
-
                     if (computationsSupplier != null) {
 
                               for ( final Map.Entry<String, HashMap<Long, Vertex>> vertexTimeStore : vertices.entrySet()) {
@@ -478,8 +474,67 @@ public class WorkerActor  extends AbstractActor {
 
     private final void onComputationMsg(ComputationMsg<? extends Serializable> msg) {
         log.info(msg.toString());
+        final InOutboxImpl outbox = new InOutboxImpl();
+        for (final String recipientName : msg.recipients()) {
+            if (!vertices.containsKey(recipientName)) {
+                continue;
+            }
 
+
+
+            final HashMap<Long, Vertex> recipientStore = vertices.get(recipientName);
+
+            Collection<Vertex> recipientCol= recipientStore.values();
+            Vertex recipient=  recipientCol.stream().reduce((prev, next) -> next).orElse(null);
+
+
+            HashMap<Long, Set<Edge>> outgoingEdgesTimeStore=  edges.get(recipientName);
+
+            final VertexCentricComputation<? extends Serializable, ? extends Serializable> comp = computations
+                    .get(recipientName);
+
+            final List inbox = msg.messagesFor(recipientName);
+            final Set output = new HashSet();
+
+
+            if(outgoingEdgesTimeStore!=null){
+                Set<Long> timeKey= outgoingEdgesTimeStore.keySet();
+                long lastKey= timeKey.stream().reduce((first, second) -> second).orElse(null);
+
+                Set<Edge> outgoingEdges=  outgoingEdgesTimeStore.get(lastKey);
+
+                comp.iterate(recipient, outgoingEdges, inbox, outbox, output, msg.getSuperstep());
+            }
+
+
+        }
+        sender().tell(new ComputationMsg<>(outbox, msg.getSuperstep(), false), self());
     }
+
+
+
+
+    private final void onResultRequestMsg(ResultRequestMsg msg) {
+        log.info(msg.toString());
+
+        VertexCentricComputation c = null;
+        Set<HashSet<HashSet<String>>> results = new HashSet<>();
+            for (VertexCentricComputation comp : computations.values()) {
+                c = comp;
+                HashSet<HashSet<String>> msgResult = (HashSet<HashSet<String>>) comp.getResult();
+                results.add(msgResult);
+            }
+
+            if (c != null) {
+                HashSet<HashSet<String>> finalResult = (HashSet<HashSet<String>>) c.mergeResults(results);
+                sender().tell(new ResultReplyMsg(finalResult), self());
+            } else {
+                sender().tell(new ResultReplyMsg(new HashSet<HashSet<String>>()), self());
+            }
+    }
+
+
+
 
 
     public static final Props props(int workerId) {

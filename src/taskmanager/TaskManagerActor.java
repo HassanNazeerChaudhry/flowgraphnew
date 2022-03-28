@@ -7,10 +7,7 @@ import shared.Utils;
 import shared.messages.TaskManagerInitMsg;
 import shared.messages.TaskManagerAnnounceMsg;
 import shared.messages.graphchanges.*;
-import shared.messages.vertexcentric.ComputationMsg;
-import shared.messages.vertexcentric.FailedComputationMsg;
-import shared.messages.vertexcentric.InstallComputationMsg;
-import shared.messages.vertexcentric.StartComputationMsg;
+import shared.messages.vertexcentric.*;
 import shared.vertexcentric.InOutboxImpl;
 import shared.vertexcentric.MsgSenderPair;
 import shared.vertexcentric.VertexCentricComputation;
@@ -39,6 +36,10 @@ public class TaskManagerActor  extends AbstractActor {
     // State for vertex centric computation
     int numWaitingFor = 0;
     private InOutboxImpl superstepBox;
+
+    //variables for result unification
+    private List<ResultReplyMsg> msgBuffer = new ArrayList<>();
+    int msgCount = 0;
 
 
     private TaskManagerActor(String name, int numMyWorkers, String jobManagerAddr) {
@@ -81,6 +82,8 @@ public class TaskManagerActor  extends AbstractActor {
                 match(InstallComputationMsg.class, this::onInstallComputationMsg). //
                 match(StartComputationMsg.class, this::onStartComputationMsg). //
                 match(ComputationMsg.class, this::onComputationMsg). //
+                match(ResultRequestMsg.class, this::onResultRequestMsg). //
+                match(ResultReplyMsg.class, this::onResultReplyMsg). //
                 match(FailedComputationMsg.class, this::onFailedComputationMsg). //
                 build();
 
@@ -160,7 +163,8 @@ public class TaskManagerActor  extends AbstractActor {
                     }
                 }
                 if (numWaitingFor == 0) {
-                    jobManager.tell(new ComputationMsg<>(superstepBox, msg.getSuperstep(), false), self());
+
+                         jobManager.tell(new ComputationMsg<>(superstepBox, msg.getSuperstep(), false), self());
                 }
             }
 
@@ -173,7 +177,36 @@ public class TaskManagerActor  extends AbstractActor {
     }
 
 
+    private final void onResultRequestMsg(ResultRequestMsg msg) {
+        log.info(msg.toString());
 
+
+        //wait for multiple message before aggregation
+        workers.values().stream().forEach(worker -> worker.tell(msg, self()));
+
+    }
+
+    private final void onResultReplyMsg(ResultReplyMsg msg) {
+        log.info(msg.toString());
+        msgCount++;
+        if (msgCount==workers.size()) {
+            msgBuffer.add(msg);
+            Set<HashSet<HashSet<String>>> results = new HashSet<>();
+            for (ResultReplyMsg msgb : msgBuffer) {
+                HashSet<HashSet<String>> msgResult = (HashSet<HashSet<String>>) msgb.getResult();
+
+                results.add(msgResult);
+            }
+            HashSet<HashSet<String>> finalResult = (HashSet<HashSet<String>>) computation.mergeResults(results);
+            msgCount = 0;
+            msgBuffer.clear();
+            jobManager.tell(new ResultReplyMsg<>(finalResult), sender());
+
+        } else {
+            msgBuffer.add(msg);
+        }
+
+    }
 
 
     /**

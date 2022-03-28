@@ -9,10 +9,11 @@ import shared.Utils;
 import shared.messages.*;
 import shared.messages.graphchanges.*;
 import shared.messages.vertexcentric.*;
+import shared.vertexcentric.InOutboxImpl;
+import shared.vertexcentric.MsgSenderPair;
 import shared.vertexcentric.VertexCentricComputation;
 
-import java.util.NavigableMap;
-import java.util.TreeMap;
+import java.util.*;
 
 
 public class JobManagerActor extends AbstractActorWithStash {
@@ -27,6 +28,7 @@ public class JobManagerActor extends AbstractActorWithStash {
     private VertexCentricComputation computation = null;
 
     //variables for iterative computation
+    private Map<Integer, InOutboxImpl> superstepMsgs = new HashMap<>();
     private int receivedReplies = 0;
     private int expectedReplies = 0;
 
@@ -56,6 +58,7 @@ public class JobManagerActor extends AbstractActorWithStash {
     private final Receive iterativeComputationState() {
         return receiveBuilder(). //
                 match(ComputationMsg.class, this::onComputationMsg). //
+                match(FailedComputationMsg.class, this::onFailedComputationMsg). //
                 match(ChangeGraphMsg.class, msg -> stash()). //
                 build();
     }
@@ -93,7 +96,7 @@ public class JobManagerActor extends AbstractActorWithStash {
         expectedReplies = taskManagers.size();
         receivedReplies = 0;
         taskManagers.values().forEach(tm -> tm.tell(new StartComputationMsg(msg.timestamp()), self()));
-        getContext().become(iterativeComputationState());
+       getContext().become(iterativeComputationState());
     }
 
     private final void onChangeEdgeMsg(ChangeEdgeMsg msg) {
@@ -117,8 +120,44 @@ public class JobManagerActor extends AbstractActorWithStash {
     }
 
 
+
+    private final void onFailedComputationMsg(FailedComputationMsg msg) {
+        log.info("Failed message in job manager");
+        getContext().become(receiveChangeState());
+        unstashAll();
+
+    }
+
+
     private final void onComputationMsg(ComputationMsg msg) {
-        log.info(msg.toString());
+        log.info("Computation message in job manager");
+
+
+
+            for (final String recipientName : (Set<String>) msg.recipients()) {
+                for (final MsgSenderPair p : (List<MsgSenderPair>) msg.messagesFor(recipientName)) {
+                    final int responsibleWorker = Utils.computeResponsibleWorkerFor(recipientName, numWorkers);
+                    final int taskManager = taskManagers.floorEntry(responsibleWorker).getKey();
+                    InOutboxImpl box = superstepMsgs.get(taskManager);
+                    if (box == null) {
+                        box = new InOutboxImpl<>();
+                        superstepMsgs.put(taskManager, box);
+                    }
+                    box.add(recipientName, p);
+                }
+            }
+
+
+
+
+        receivedReplies++;
+
+        if (receivedReplies == expectedReplies) {
+            getContext().become(receiveChangeState());
+            unstashAll();
+        }
+
+
 
 
     }

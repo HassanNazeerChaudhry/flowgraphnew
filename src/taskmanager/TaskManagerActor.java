@@ -7,14 +7,15 @@ import shared.Utils;
 import shared.messages.TaskManagerInitMsg;
 import shared.messages.TaskManagerAnnounceMsg;
 import shared.messages.graphchanges.*;
+import shared.messages.vertexcentric.ComputationMsg;
+import shared.messages.vertexcentric.FailedComputationMsg;
 import shared.messages.vertexcentric.InstallComputationMsg;
 import shared.messages.vertexcentric.StartComputationMsg;
 import shared.vertexcentric.InOutboxImpl;
+import shared.vertexcentric.MsgSenderPair;
 import shared.vertexcentric.VertexCentricComputation;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.NavigableMap;
+import java.util.*;
 
 public class TaskManagerActor  extends AbstractActor {
     private final LoggingAdapter log = Logging.getLogger(getContext().getSystem(), this);
@@ -79,6 +80,8 @@ public class TaskManagerActor  extends AbstractActor {
                 match(ChangeEdgeMsg.class, this::onChangeEdgeMsg). //
                 match(InstallComputationMsg.class, this::onInstallComputationMsg). //
                 match(StartComputationMsg.class, this::onStartComputationMsg). //
+                match(ComputationMsg.class, this::onComputationMsg). //
+                match(FailedComputationMsg.class, this::onFailedComputationMsg). //
                 build();
 
     }
@@ -129,6 +132,8 @@ public class TaskManagerActor  extends AbstractActor {
         log.info(msg.toString());
         computation=(VertexCentricComputation) msg.getComputationSupplier().get();
         this.workers.values().stream().forEach(workers -> workers.tell(msg, self()));
+
+
     }
 
     private final void onStartComputationMsg(StartComputationMsg msg) {
@@ -136,7 +141,37 @@ public class TaskManagerActor  extends AbstractActor {
         workers.values().forEach(worker -> worker.tell(msg, self()));
         numWaitingFor = workers.size();
         superstepBox = new InOutboxImpl<>();
+
+
     }
+
+    private final void onComputationMsg(ComputationMsg msg) {
+        log.info(msg.toString());
+
+            if (msg.isFromJobManager()) {
+                    workers.values().forEach(worker -> worker.tell(msg, self()));
+                    numWaitingFor = workers.size();
+                    superstepBox = new InOutboxImpl<>();
+            } else {
+                numWaitingFor--;
+                for (final String recipient : (Set<String>) msg.recipients()) {
+                    for (final MsgSenderPair pair : (List<MsgSenderPair>) msg.messagesFor(recipient)) {
+                        superstepBox.add(recipient, pair);
+                    }
+                }
+                if (numWaitingFor == 0) {
+                    jobManager.tell(new ComputationMsg<>(superstepBox, msg.getSuperstep(), false), self());
+                }
+            }
+
+    }
+
+    private final void onFailedComputationMsg(FailedComputationMsg msg) {
+        log.info("Computation message in job manager");
+        jobManager.tell(msg, self());
+
+    }
+
 
 
 

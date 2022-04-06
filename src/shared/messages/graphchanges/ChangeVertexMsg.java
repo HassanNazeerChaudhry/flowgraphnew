@@ -7,11 +7,13 @@ public abstract class ChangeVertexMsg implements ChangeGraphMsg {
 
     protected final Vertex vertex;
     private final long timestamp;
+    private final String msgType;
 
-    public ChangeVertexMsg(Vertex vertex, long timestamp) {
+    public ChangeVertexMsg(Vertex vertex, long timestamp, String msgType) {
         super();
         this.vertex = vertex;
         this.timestamp = timestamp;
+        this.msgType=msgType;
     }
 
     public String getName() {
@@ -20,6 +22,10 @@ public abstract class ChangeVertexMsg implements ChangeGraphMsg {
 
     public Vertex getVertex() {
         return vertex;
+    }
+
+    public String getMsgType() {
+        return msgType;
     }
 
     @Override

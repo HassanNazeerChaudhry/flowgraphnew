@@ -44,12 +44,12 @@ public class Client {
 
 
         //reading pattern file and passing it through antlr
-      /*  String fileName="src/resources/test2.txt";
+        String fileName="src/resources/test1.txt";
         PatternParser parser=Utils.getParser(fileName);
         //tell antlr to build a parse tree parse from start symbol 'Pattern'
         ParseTree antlrAST= parser.patternEntry();
         PatternEntryVisitor patternEntryVisitor= new PatternEntryVisitor();
-        Pattern pattern= patternEntryVisitor.visit(antlrAST);*/
+        Pattern pattern= patternEntryVisitor.visit(antlrAST);
 
 
 

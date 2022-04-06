@@ -4,7 +4,7 @@ import java.io.Serializable;
 import java.util.Map;
 import java.util.Set;
 
-public class Vertex implements Serializable {
+public class Vertex implements Serializable, Cloneable {
     private static final long serialVersionUID = 3771725367350734078L;
     private final String name;
     private final GraphState state;
@@ -14,6 +14,8 @@ public class Vertex implements Serializable {
         this.name = "";
         this.state=new GraphState();
     }
+
+
 
     public Vertex(String name, String destination) {
         this.name = name;
@@ -94,6 +96,11 @@ public class Vertex implements Serializable {
     @Override
     public String toString() {
         return "Vertex(" + name + " [" + state + "])";
+    }
+
+    @Override
+    public Object clone() throws CloneNotSupportedException {
+        return super.clone();
     }
 
 }

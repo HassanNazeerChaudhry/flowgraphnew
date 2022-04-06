@@ -7,10 +7,12 @@ public abstract class ChangeEdgeMsg implements ChangeGraphMsg {
 
     protected final Edge edge;
     private final long timestamp;
+    private final String msgType;
 
-    public ChangeEdgeMsg(Edge edge, long timestamp) {
+    public ChangeEdgeMsg(Edge edge, long timestamp, String msgType) {
         this.edge = edge;
         this.timestamp = timestamp;
+        this.msgType=msgType;
     }
 
     /**
@@ -34,8 +36,15 @@ public abstract class ChangeEdgeMsg implements ChangeGraphMsg {
         return edge.getDestination();
     }
 
+    public String getMsgType() {
+        return msgType;
+    }
+
     @Override
     public long timestamp() {
         return timestamp;
     }
+
+
+
 }

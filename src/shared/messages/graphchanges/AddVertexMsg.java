@@ -9,7 +9,7 @@ public class AddVertexMsg extends ChangeVertexMsg {
     private static final long serialVersionUID = -1506565987690135540L;
 
     public AddVertexMsg(Vertex vertex, long timestamp) {
-        super(vertex, timestamp);
+        super(vertex, timestamp, "Add");
     }
 
     @Override

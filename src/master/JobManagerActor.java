@@ -102,10 +102,19 @@ public class JobManagerActor extends AbstractActorWithStash {
     private final void onChangeVertexMsg(ChangeVertexMsg msg) {
         log.info(msg.toString());
         //look for the responsbile worker and forward the change vertex messages to it
-        int responsibleWorker = Utils.computeResponsibleWorkerFor(msg.getName(), numWorkers);
-        final ActorRef taskManager = taskManagers.floorEntry(responsibleWorker).getValue();
-        taskManager.forward(msg, getContext());
 
+        switch( msg.getMsgType()) {
+            case "Add": case "Update":
+                int responsibleWorker = Utils.computeResponsibleWorkerFor(msg.getName(), numWorkers);
+                final ActorRef taskManager = taskManagers.floorEntry(responsibleWorker).getValue();
+                taskManager.forward(msg, getContext());
+                break;
+            case "Del":
+                 taskManagers.values().forEach(tm -> tm.tell(msg, self()));
+                break;
+
+
+        }
 
         //variables related to graph computation and iterative computation
         expectedReplies = taskManagers.size();
@@ -118,9 +127,12 @@ public class JobManagerActor extends AbstractActorWithStash {
 
     private final void onChangeEdgeMsg(ChangeEdgeMsg msg) {
         log.info(msg.toString());
+
+
         final int responsibleWorker = Utils.computeResponsibleWorkerFor(msg.getSource(), numWorkers);
         final ActorRef taskManager = taskManagers.floorEntry(responsibleWorker).getValue();
         taskManager.forward(msg, getContext());
+
 
         //variables related to graph computation and iterative computation
         expectedReplies = taskManagers.size();
@@ -149,9 +161,10 @@ public class JobManagerActor extends AbstractActorWithStash {
     private final void onComputationMsg(ComputationMsg msg) {
         log.info("Computation message in job manager");
 
+        getContext().become(receiveChangeState());
+        unstashAll();
 
-
-            for (final String recipientName : (Set<String>) msg.recipients()) {
+          /*  for (final String recipientName : (Set<String>) msg.recipients()) {
                 for (final MsgSenderPair p : (List<MsgSenderPair>) msg.messagesFor(recipientName)) {
                     final int responsibleWorker = Utils.computeResponsibleWorkerFor(recipientName, numWorkers);
                     final int taskManager = taskManagers.floorEntry(responsibleWorker).getKey();
@@ -196,7 +209,7 @@ public class JobManagerActor extends AbstractActorWithStash {
                 superstepMsgs = new HashMap<>();
             }
         }
-
+*/
 
 
 

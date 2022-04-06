@@ -119,14 +119,30 @@ public class TaskManagerActor  extends AbstractActor {
 
     private final void onChangeVertexMsg(ChangeVertexMsg msg) {
         log.info(msg.toString());
-        final int workerId = Utils.computeResponsibleWorkerFor(msg.getName(), numAllWorkers);
-        workers.get(workerId).forward(msg, getContext());
+
+        switch( msg.getMsgType()) {
+            case "Add": case "Update":
+                final int workerId = Utils.computeResponsibleWorkerFor(msg.getName(), numAllWorkers);
+                workers.get(workerId).forward(msg, getContext());
+                break;
+            case "Del":
+                this.workers.values().stream().forEach(workers -> workers.tell(msg, self()));
+                break;
+
+
+        }
+
+
+
     }
 
     private final void onChangeEdgeMsg(ChangeEdgeMsg msg) {
         log.info(msg.toString());
+
         final int workerId = Utils.computeResponsibleWorkerFor(msg.getSource(), numAllWorkers);
         workers.get(workerId).forward(msg, getContext());
+
+
     }
 
 

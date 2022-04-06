@@ -10,7 +10,7 @@ public class AddEdgeMsg extends ChangeEdgeMsg {
     private static final long serialVersionUID = -1645490952494467247L;
 
     public AddEdgeMsg(Edge edge, long timestamp) {
-        super(edge, timestamp);
+        super(edge, timestamp,"Add");
     }
 
     @Override

@@ -67,6 +67,11 @@ public class WorkerActor  extends AbstractActor {
             HashMap<Long, Vertex> vertexTimeCol;
             Boolean isInsertable=false;
 
+    /*        if(msg.getName().equals("v1")){
+
+                String vName=msg.getName();
+            }
+*/
             //If vertex is already in the store
             if(vertices.containsKey(msg.getName())){
                 //find if the last state of vertex was deleted
@@ -109,13 +114,27 @@ public class WorkerActor  extends AbstractActor {
     private final void onDelVertexMsg(DelVertexMsg msg) {
         log.info(msg.toString());
 
+
+
+
         HashMap<Long, Vertex> vertexTimeCol;
         try{
             // the vertex must exist before it could be deleted
             if(vertices.containsKey(msg.getName())){
                 //retrieve the existing context
                 vertexTimeCol=vertices.get(msg.getName());
+
                 Vertex modVertex= new Vertex();
+
+
+
+               for( Vertex item:vertexTimeCol.values()){
+
+                   modVertex=(Vertex) item.clone();
+
+
+
+               }
 
 
                 //if vertex is already deleted
@@ -134,18 +153,20 @@ public class WorkerActor  extends AbstractActor {
                     //delete all the edges going out from that vertex
                     HashMap<Long, Set<Edge>> edgeList=edges.get(msg.getName());
 
-                    Set<Edge> setEdges=edgeList.get(edgeList.size()-1);
 
-                    Set<Edge> newsetEdges=new HashSet<>();
-                    for (Edge e : setEdges) {
-                        e.setIsDeleted(true);
-                        newsetEdges.add(e);
+                    if(edgeList!=null){
+                        Set<Edge> setEdges=edgeList.get(edgeList.size()-1);
+
+                        Set<Edge> newsetEdges=new HashSet<>();
+                        for (Edge e : setEdges) {
+                            e.setIsDeleted(true);
+                            newsetEdges.add(e);
+                        }
+
+                        edgeList.put(msg.timestamp(),newsetEdges);
+                        edges.remove(msg.getName());
+                        edges.put(msg.getName(),edgeList);
                     }
-
-                    edgeList.put(msg.timestamp(),newsetEdges);
-                    edges.remove(msg.getName());
-                    edges.put(msg.getName(),edgeList);
-
 
                 }
 
@@ -481,7 +502,6 @@ public class WorkerActor  extends AbstractActor {
             }
 
 
-
             final HashMap<Long, Vertex> recipientStore = vertices.get(recipientName);
 
             Collection<Vertex> recipientCol= recipientStore.values();
@@ -503,6 +523,11 @@ public class WorkerActor  extends AbstractActor {
 
                 Set<Edge> outgoingEdges=  outgoingEdgesTimeStore.get(lastKey);
 
+                /*if(edges.containsKey("v3") && msg.getSuperstep()==2){
+
+                    HashMap<Long, Set<Edge>> str= edges.get("v3");
+                }
+              */
                 comp.iterate(recipient, outgoingEdges, inbox, outbox, output, msg.getSuperstep());
             }
 
@@ -516,6 +541,13 @@ public class WorkerActor  extends AbstractActor {
 
     private final void onResultRequestMsg(ResultRequestMsg msg) {
         log.info(msg.toString());
+
+        if(edges.containsKey("v3")){
+
+            HashMap<Long, Set<Edge>> str= edges.get("v3");
+        }
+
+
 
         VertexCentricComputation c = null;
         Set<HashSet<HashSet<String>>> results = new HashSet<>();

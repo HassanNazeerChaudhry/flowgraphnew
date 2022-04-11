@@ -9,6 +9,7 @@ import shared.Utils;
 import shared.messages.*;
 import shared.messages.graphchanges.*;
 import shared.messages.vertexcentric.*;
+import shared.model.graphcollection.GraphActions;
 import shared.vertexcentric.*;
 
 
@@ -28,6 +29,7 @@ public class JobManagerActor extends AbstractActorWithStash {
 
     //variables for iterative computation
     private Map<Integer, InOutboxImpl> superstepMsgs = new HashMap<>();
+    private Map<String, GraphActions> graphActions= new HashMap<>();
     private int receivedReplies = 0;
     private int expectedReplies = 0;
 
@@ -55,6 +57,8 @@ public class JobManagerActor extends AbstractActorWithStash {
                 match(ChangeEdgeMsg.class, this::onChangeEdgeMsg). //
                 match(ChangeVertexMsg.class, this::onChangeVertexMsg). //
                 match(InstallComputationMsg.class, this::onInstallComputationMsg). //
+                match(SelectMsg.class, this::onSelectMsg).
+                match(PartitionMsg.class, this::onPartitionMsg).
                 build();
 
     }
@@ -71,6 +75,13 @@ public class JobManagerActor extends AbstractActorWithStash {
     private final Receive waitingForReplyState() {
         return receiveBuilder(). //
                 match(ResultReplyMsg.class, this::onResultReplyMsg). //
+                match(ChangeGraphMsg.class, msg -> stash()). //
+                build();
+    }
+
+    private final Receive graphActionState() {
+        return receiveBuilder(). //
+                match(GraphAction.class, this::onGraphActionMsg). //
                 match(ChangeGraphMsg.class, msg -> stash()). //
                 build();
     }
@@ -149,6 +160,20 @@ public class JobManagerActor extends AbstractActorWithStash {
     }
 
 
+    private final void onSelectMsg(SelectMsg msg){
+        log.info(msg.toString());
+
+        graphActions.put("Selection",msg.getSelCollection());
+        //this.taskManagers.values().stream().forEach(taskManagers -> taskManagers.tell(msg, self()));
+    }
+
+    private final void onPartitionMsg(PartitionMsg msg){
+        log.info(msg.toString());
+        graphActions.put("Partitioning",msg.getPartCollection());
+        //this.taskManagers.values().stream().forEach(taskManagers -> taskManagers.tell(msg, self()));
+    }
+
+
 
     private final void onFailedComputationMsg(FailedComputationMsg msg) {
         log.info("Failed message in job manager");
@@ -161,8 +186,8 @@ public class JobManagerActor extends AbstractActorWithStash {
     private final void onComputationMsg(ComputationMsg msg) {
         log.info("Computation message in job manager");
 
-        getContext().become(receiveChangeState());
-        unstashAll();
+        getContext().become(graphActionState());
+        taskManagers.values().stream().forEach(taskManagers -> taskManagers.tell(new GraphAction(), self()));
 
           /*  for (final String recipientName : (Set<String>) msg.recipients()) {
                 for (final MsgSenderPair p : (List<MsgSenderPair>) msg.messagesFor(recipientName)) {
@@ -235,6 +260,16 @@ public class JobManagerActor extends AbstractActorWithStash {
         } else {
             msgBuffer.add(msg);
         }
+    }
+
+
+    private final void onGraphActionMsg(GraphAction msg){
+        log.info(msg.toString());
+
+        log.info(Integer.toString(graphActions.size()) );
+
+        getContext().become(receiveChangeState());
+        unstashAll();
     }
 
 

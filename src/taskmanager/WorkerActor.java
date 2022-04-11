@@ -6,6 +6,7 @@ import akka.actor.Props;
 import akka.event.Logging;
 import akka.event.LoggingAdapter;
 import shared.graph.*;
+import shared.messages.SelectMsg;
 import shared.messages.graphchanges.*;
 import shared.messages.vertexcentric.*;
 import shared.vertexcentric.InOutboxImpl;
@@ -50,6 +51,7 @@ public class WorkerActor  extends AbstractActor {
                 match(DelEdgeMsg.class, this::onDelEdgeMsg). //
               //  match(UpdateEdgeMsg.class, this::onUpdateEdgeMsg). //
                 match(InstallComputationMsg.class, this::onInstallComputationMsg). //
+                match(SelectMsg.class, this::onSelectMsg).
                 match(StartComputationMsg.class, this::onStartComputationMsg). //
                 match(ComputationMsg.class, this::onComputationMsg). //
                 match(ResultRequestMsg.class, this::onResultRequestMsg). //
@@ -435,6 +437,14 @@ public class WorkerActor  extends AbstractActor {
 
 
     }
+
+    private final void onSelectMsg(SelectMsg msg){
+        log.info(msg.toString());
+        log.info("at workers select message");
+
+    }
+
+
 
     private final void onStartComputationMsg(StartComputationMsg msg) {
         log.info(msg.toString());

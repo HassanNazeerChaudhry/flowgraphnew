@@ -10,8 +10,10 @@ import shared.antlr4.InputParser;
 
 import shared.antlr4.pattern.PatternParser;
 import shared.antlr4.visitor.PatternEntryVisitor;
-import shared.computations.trianglecounting.NamesSet;
-import shared.computations.trianglecounting.TraingleCounting;
+import shared.computations.NamesSet;
+import shared.computations.TraingleCounting;
+import shared.messages.PartitionMsg;
+import shared.messages.SelectMsg;
 import shared.messages.vertexcentric.InstallComputationMsg;
 import shared.messages.StartMsg;
 import shared.PropertyHandler;
@@ -19,6 +21,12 @@ import shared.Utils;
 import com.typesafe.config.ConfigFactory;
 import shared.messages.graphchanges.*;
 import shared.model.Pattern;
+import shared.model.graphcollection.PartitioningCollection;
+import shared.model.graphcollection.PartitioningObject;
+import shared.model.graphcollection.SelectCollection;
+import shared.model.enumerators.ConjugationType;
+import shared.model.enumerators.Operator;
+import shared.model.graphcollection.SelectObject;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -61,9 +69,30 @@ public class Client {
 
         clientActor.tell(new StartMsg(), ActorRef.noSender());
 
+        //sending compuation traingle counting
         final InstallComputationMsg<NamesSet, HashSet<HashSet<String>>> compMsg = new InstallComputationMsg<>("TraingleCounting",
                 () -> new TraingleCounting());
         clientActor.tell(compMsg, ActorRef.noSender());
+
+
+        //sending select operation
+        HashSet<SelectObject> selectObjectCollection=new HashSet();
+        SelectObject selectObject=new SelectObject("name", Operator.EQUAL,"Alessandro", ConjugationType.NULL);
+        selectObjectCollection.add(selectObject);
+        SelectCollection selectCollection= new SelectCollection(selectObjectCollection);
+        SelectMsg selectMsg= new SelectMsg(selectCollection);
+        clientActor.tell(selectMsg, ActorRef.noSender());
+
+
+        //sending partitioning operation
+        HashSet<PartitioningObject> partitioningObjectCollection=new HashSet();
+        PartitioningObject partitioningObject=new PartitioningObject("country");
+        partitioningObjectCollection.add(partitioningObject);
+        PartitioningCollection partitioningCollection= new PartitioningCollection(partitioningObjectCollection);
+        PartitionMsg partitionMsg= new PartitionMsg(partitioningCollection);
+        clientActor.tell(partitionMsg, ActorRef.noSender());
+
+
 
 
         BufferedReader reader;

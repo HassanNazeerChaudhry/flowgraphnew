@@ -4,6 +4,8 @@ import akka.actor.*;
 import akka.event.Logging;
 import akka.event.LoggingAdapter;
 import shared.Utils;
+import shared.messages.GraphAction;
+import shared.messages.SelectMsg;
 import shared.messages.TaskManagerInitMsg;
 import shared.messages.TaskManagerAnnounceMsg;
 import shared.messages.graphchanges.*;
@@ -80,6 +82,8 @@ public class TaskManagerActor  extends AbstractActor {
                 match(ChangeVertexMsg.class, this::onChangeVertexMsg). //
                 match(ChangeEdgeMsg.class, this::onChangeEdgeMsg). //
                 match(InstallComputationMsg.class, this::onInstallComputationMsg). //
+                match(SelectMsg.class, this::onSelectMsg).
+                match(GraphAction.class, this::onGraphAction).
                 match(StartComputationMsg.class, this::onStartComputationMsg). //
                 match(ComputationMsg.class, this::onComputationMsg). //
                 match(ResultRequestMsg.class, this::onResultRequestMsg). //
@@ -155,6 +159,14 @@ public class TaskManagerActor  extends AbstractActor {
 
     }
 
+
+
+     private final void onSelectMsg(SelectMsg msg){
+        log.info(msg.toString());
+        this.workers.values().stream().forEach(workers -> workers.tell(msg, self()));
+    }
+
+
     private final void onStartComputationMsg(StartComputationMsg msg) {
         log.info(msg.toString());
         workers.values().forEach(worker -> worker.tell(msg, self()));
@@ -222,6 +234,10 @@ public class TaskManagerActor  extends AbstractActor {
             msgBuffer.add(msg);
         }
 
+    }
+
+    private final void onGraphAction(GraphAction msg){
+        jobManager.tell(new GraphAction(), sender());
     }
 
 

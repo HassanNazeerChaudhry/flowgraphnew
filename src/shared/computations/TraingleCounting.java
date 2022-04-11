@@ -1,4 +1,4 @@
-package shared.computations.trianglecounting;
+package shared.computations;
 
 import shared.graph.Edge;
 import shared.graph.Vertex;

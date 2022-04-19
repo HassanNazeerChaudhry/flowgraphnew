@@ -78,7 +78,7 @@ public class Client {
 
         //sending select operation
         HashSet<SelectObject> selectObjectCollection=new HashSet();
-        SelectObject selectObject=new SelectObject("age", Operator.GREATER,"25", ConjugationType.NULL, Modifier.VERTEX);
+        SelectObject selectObject=new SelectObject("age", Operator.GREATER,"25", ConjugationType.NULL, Modifier.EDGE);
         selectObjectCollection.add(selectObject);
         SelectCollection selectCollection= new SelectCollection(selectObjectCollection);
         SelectMsg selectMsg= new SelectMsg(selectCollection);

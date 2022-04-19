@@ -1,7 +1,6 @@
 package taskmanager;
 
 import akka.actor.AbstractActor;
-import akka.actor.ActorRef;
 import akka.actor.Props;
 import akka.event.Logging;
 import akka.event.LoggingAdapter;
@@ -11,7 +10,6 @@ import shared.messages.SelectMsg;
 import shared.messages.graphchanges.*;
 import shared.messages.vertexcentric.*;
 import shared.model.enumerators.Modifier;
-import shared.model.enumerators.Operator;
 import shared.model.graphcollection.SelectCollection;
 import shared.model.graphcollection.SelectObject;
 import shared.vertexcentric.InOutboxImpl;
@@ -33,6 +31,9 @@ public class WorkerActor  extends AbstractActor {
 
     //name of selected vertex, <timestamp, object of vertex>
     private final Map<String, Vertex> selVertices = new HashMap<>();
+
+    //name of selected vertex, <timestamp, object of vertex>
+    private final Map<String, Set<Edge>> selEdges = new HashMap<>();
 
     // Iterative vertex centric computation
     private final Map<String, VertexCentricComputation<? extends Serializable, ? extends Serializable>> computations = new HashMap<>();
@@ -461,9 +462,6 @@ public class WorkerActor  extends AbstractActor {
                             for(Map.Entry<String, HashMap<Long, Vertex>> vEntry:vertices.entrySet()){
                                        String vName= vEntry.getKey();
 
-                                       if(vName.equals("v4")){
-                                           String vName2=vName;
-                                       }
 
                                        HashMap<Long, Vertex> vTimeStore= vEntry.getValue();
                                        Vertex vertex=(Vertex) vTimeStore.entrySet().stream().reduce((prev, next) -> next).orElse(null).getValue();
@@ -527,6 +525,78 @@ public class WorkerActor  extends AbstractActor {
                         break;
                     case EDGE:
                         Modifier m2=entry.getModType();
+
+                        if(edges.containsKey("v3")){
+                            HashMap<Long, Set<Edge>> e1= edges.get("v3");
+                        }
+
+                        if(edges!=null){
+                                for(Map.Entry<String, HashMap<Long, Set<Edge>>> eEntry:edges.entrySet()){
+                                            String eName= eEntry.getKey();
+
+
+                                            HashMap<Long, Set<Edge>> eTimeStore= eEntry.getValue();
+
+                                            Set<Edge> edgesSet= eTimeStore.entrySet().stream().reduce((prev, next) -> next).orElse(null).getValue();
+                                            Set<Edge> selEdgesSet= new HashSet<Edge>();
+                                            for(Edge edgeElement:edgesSet){
+                                                    if(edges!=null) {
+                                                            if (!edgeElement.getIsDeleted()) {
+                                                                GraphState graphState=edgeElement.getState();
+                                                                Map<String, String[]> attributes=graphState.getAttributes();
+
+                                                                        for(Map.Entry<String, String[]> attEntry:attributes.entrySet()) {
+                                                                            if (attEntry.getKey().equals(entry.getVarName())) {
+                                                                                String[] valEntries=attEntry.getValue();
+
+                                                                                String oprandName=entry.getOprandName();
+                                                                                switch(entry.getOperator()) {
+                                                                                    case EQUAL:
+                                                                                        if(valEntries[0].equals(oprandName)){
+
+                                                                                            selEdgesSet.add(edgeElement);
+                                                                                        }
+
+                                                                                        break;
+                                                                                    case GREATER:
+                                                                                        if(Integer.parseInt(valEntries[0])>Integer.parseInt(oprandName)){
+                                                                                            selEdgesSet.add(edgeElement);
+                                                                                        }
+                                                                                        break;
+
+                                                                                    case LESS:
+                                                                                        if(Integer.parseInt(valEntries[0])<Integer.parseInt(oprandName)){
+                                                                                            selEdgesSet.add(edgeElement);
+                                                                                        }
+                                                                                        break;
+
+                                                                                    case GREATEREQUAL:
+                                                                                        if(Integer.parseInt(valEntries[0])>=Integer.parseInt(oprandName)){
+                                                                                            selEdgesSet.add(edgeElement);
+                                                                                        }
+                                                                                        break;
+
+                                                                                    case LESSEQUAL:
+                                                                                        if(Integer.parseInt(valEntries[0])<=Integer.parseInt(oprandName)){
+                                                                                            selEdgesSet.add(edgeElement);
+                                                                                        }
+                                                                                        break;
+
+                                                                                }
+
+
+                                                                            }
+                                                                         }
+                                                            }
+                                                    }
+
+                                            }
+
+                                    //selected edges
+                                    selEdges.put(eName,selEdgesSet);
+                                }
+
+                        }
                         break;
 
                 }
@@ -534,15 +604,15 @@ public class WorkerActor  extends AbstractActor {
         }
 
 
-        for(Map.Entry<String,Vertex> selVertex:selVertices.entrySet()){
-            Vertex vertex=selVertex.getValue();
-            log.info(vertex.getName());
+
+        for(Map.Entry<String, Set<Edge>> entryEdge:selEdges.entrySet()){
+          Set<Edge> entrySetEdge=entryEdge.getValue();
+
+          for(Edge edgeSetEdge:entrySetEdge){
+              log.info(edgeSetEdge.toString());
+          }
+
         }
-
-
-        //  private final Map<String, HashMap<Long, Vertex>> vertices = new HashMap<>();
-        //name of edge, <timestamp, set of edges>
-        // private final Map<String, HashMap<Long, Set<Edge>>> edges = new HashMap<>();
 
     }
 

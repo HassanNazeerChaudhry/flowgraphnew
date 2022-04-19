@@ -21,6 +21,7 @@ import shared.Utils;
 import com.typesafe.config.ConfigFactory;
 import shared.messages.graphchanges.*;
 import shared.model.Pattern;
+import shared.model.enumerators.Modifier;
 import shared.model.graphcollection.PartitioningCollection;
 import shared.model.graphcollection.PartitioningObject;
 import shared.model.graphcollection.SelectCollection;
@@ -77,7 +78,7 @@ public class Client {
 
         //sending select operation
         HashSet<SelectObject> selectObjectCollection=new HashSet();
-        SelectObject selectObject=new SelectObject("name", Operator.EQUAL,"Alessandro", ConjugationType.NULL);
+        SelectObject selectObject=new SelectObject("age", Operator.GREATER,"25", ConjugationType.NULL, Modifier.VERTEX);
         selectObjectCollection.add(selectObject);
         SelectCollection selectCollection= new SelectCollection(selectObjectCollection);
         SelectMsg selectMsg= new SelectMsg(selectCollection);

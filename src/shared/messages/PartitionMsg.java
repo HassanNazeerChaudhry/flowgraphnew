@@ -1,7 +1,7 @@
 package shared.messages;
 
+import akka.actor.ActorRef;
 import shared.model.graphcollection.PartitioningCollection;
-import shared.model.graphcollection.SelectCollection;
 
 import java.io.Serializable;
 

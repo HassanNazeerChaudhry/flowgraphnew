@@ -10,6 +10,8 @@ import shared.messages.*;
 import shared.messages.graphchanges.*;
 import shared.messages.vertexcentric.*;
 import shared.model.graphcollection.GraphActions;
+import shared.model.graphcollection.PartitioningCollection;
+import shared.model.graphcollection.SelectCollection;
 import shared.vertexcentric.*;
 
 
@@ -162,15 +164,12 @@ public class JobManagerActor extends AbstractActorWithStash {
 
     private final void onSelectMsg(SelectMsg msg){
         log.info(msg.toString());
-
-        graphActions.put("Selection",msg.getSelCollection());
-        //this.taskManagers.values().stream().forEach(taskManagers -> taskManagers.tell(msg, self()));
+        graphActions.put("Sel",msg.getSelCollection());
     }
 
     private final void onPartitionMsg(PartitionMsg msg){
         log.info(msg.toString());
-        graphActions.put("Partitioning",msg.getPartCollection());
-        //this.taskManagers.values().stream().forEach(taskManagers -> taskManagers.tell(msg, self()));
+        graphActions.put("Part",msg.getPartCollection());
     }
 
 
@@ -266,7 +265,22 @@ public class JobManagerActor extends AbstractActorWithStash {
     private final void onGraphActionMsg(GraphAction msg){
         log.info(msg.toString());
 
-        log.info(Integer.toString(graphActions.size()) );
+        for(Map.Entry<String, GraphActions> graphItem:graphActions.entrySet()){
+            String key=graphItem.getKey();
+
+            switch(graphItem.getKey()) {
+                case "Sel":
+                    this.taskManagers.values().stream().forEach(taskManagers -> taskManagers.tell(new SelectMsg((SelectCollection)graphItem.getValue()), self()));
+                    break;
+                case "Part":
+                    this.taskManagers.values().stream().forEach(taskManagers -> taskManagers.tell(new PartitionMsg((PartitioningCollection) graphItem.getValue()), self()));
+                    break;
+                default:
+                    // code block
+            }
+
+        }
+
 
         getContext().become(receiveChangeState());
         unstashAll();

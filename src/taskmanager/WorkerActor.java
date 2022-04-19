@@ -6,9 +6,14 @@ import akka.actor.Props;
 import akka.event.Logging;
 import akka.event.LoggingAdapter;
 import shared.graph.*;
+import shared.messages.PartitionMsg;
 import shared.messages.SelectMsg;
 import shared.messages.graphchanges.*;
 import shared.messages.vertexcentric.*;
+import shared.model.enumerators.Modifier;
+import shared.model.enumerators.Operator;
+import shared.model.graphcollection.SelectCollection;
+import shared.model.graphcollection.SelectObject;
 import shared.vertexcentric.InOutboxImpl;
 import shared.vertexcentric.VertexCentricComputation;
 
@@ -26,6 +31,8 @@ public class WorkerActor  extends AbstractActor {
     //name of edge, <timestamp, set of edges>
     private final Map<String, HashMap<Long, Set<Edge>>> edges = new HashMap<>();
 
+    //name of selected vertex, <timestamp, object of vertex>
+    private final Map<String, Vertex> selVertices = new HashMap<>();
 
     // Iterative vertex centric computation
     private final Map<String, VertexCentricComputation<? extends Serializable, ? extends Serializable>> computations = new HashMap<>();
@@ -52,6 +59,7 @@ public class WorkerActor  extends AbstractActor {
               //  match(UpdateEdgeMsg.class, this::onUpdateEdgeMsg). //
                 match(InstallComputationMsg.class, this::onInstallComputationMsg). //
                 match(SelectMsg.class, this::onSelectMsg).
+                match(PartitionMsg.class, this::onPartitionMsg).
                 match(StartComputationMsg.class, this::onStartComputationMsg). //
                 match(ComputationMsg.class, this::onComputationMsg). //
                 match(ResultRequestMsg.class, this::onResultRequestMsg). //
@@ -440,7 +448,108 @@ public class WorkerActor  extends AbstractActor {
 
     private final void onSelectMsg(SelectMsg msg){
         log.info(msg.toString());
-        log.info("at workers select message");
+
+        SelectCollection selectCollection=msg.getSelCollection();
+        HashSet<SelectObject> selectObjectCollection=selectCollection.getSelectCollection();
+
+        for (SelectObject entry : selectObjectCollection) {
+
+                switch(entry.getModType()) {
+                    case VERTEX:
+                        Modifier m1=entry.getModType();
+                     if(vertices!=null){
+                            for(Map.Entry<String, HashMap<Long, Vertex>> vEntry:vertices.entrySet()){
+                                       String vName= vEntry.getKey();
+
+                                       if(vName.equals("v4")){
+                                           String vName2=vName;
+                                       }
+
+                                       HashMap<Long, Vertex> vTimeStore= vEntry.getValue();
+                                       Vertex vertex=(Vertex) vTimeStore.entrySet().stream().reduce((prev, next) -> next).orElse(null).getValue();
+
+
+                                if(vertex!=null){
+                                           if(!vertex.getIsDeleted()){
+                                               GraphState graphState=vertex.getState();
+                                              Map<String, String[]> attributes=graphState.getAttributes();
+
+
+                                              for(Map.Entry<String, String[]> attEntry:attributes.entrySet()){
+                                                 if(attEntry.getKey().equals(entry.getVarName())){
+
+                                                        String[] valEntries=attEntry.getValue();
+
+                                                        String oprandName=entry.getOprandName();
+                                                     switch(entry.getOperator()) {
+                                                         case EQUAL:
+                                                               if(valEntries[0].equals(oprandName)){
+                                                                   selVertices.put(vName, vertex);
+                                                               }
+
+                                                             break;
+                                                         case GREATER:
+                                                             if(Integer.parseInt(valEntries[0])>Integer.parseInt(oprandName)){
+                                                                 selVertices.put(vName, vertex);
+                                                             }
+                                                             break;
+
+                                                         case LESS:
+                                                             if(Integer.parseInt(valEntries[0])<Integer.parseInt(oprandName)){
+                                                                 selVertices.put(vName, vertex);
+                                                             }
+                                                             break;
+
+                                                         case GREATEREQUAL:
+                                                             if(Integer.parseInt(valEntries[0])>=Integer.parseInt(oprandName)){
+                                                                 selVertices.put(vName, vertex);
+                                                             }
+                                                             break;
+
+                                                         case LESSEQUAL:
+                                                             if(Integer.parseInt(valEntries[0])<=Integer.parseInt(oprandName)){
+                                                                 selVertices.put(vName, vertex);
+                                                             }
+                                                             break;
+
+                                                     }
+
+                                                 }
+                                              }
+
+                                           }
+                                   }
+
+
+                            }
+                      }
+
+                        break;
+                    case EDGE:
+                        Modifier m2=entry.getModType();
+                        break;
+
+                }
+
+        }
+
+
+        for(Map.Entry<String,Vertex> selVertex:selVertices.entrySet()){
+            Vertex vertex=selVertex.getValue();
+            log.info(vertex.getName());
+        }
+
+
+        //  private final Map<String, HashMap<Long, Vertex>> vertices = new HashMap<>();
+        //name of edge, <timestamp, set of edges>
+        // private final Map<String, HashMap<Long, Set<Edge>>> edges = new HashMap<>();
+
+    }
+
+
+    private final void onPartitionMsg(PartitionMsg msg){
+        log.info(msg.toString());
+        log.info("at workers paritioning message");
 
     }
 

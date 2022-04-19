@@ -4,10 +4,7 @@ import akka.actor.*;
 import akka.event.Logging;
 import akka.event.LoggingAdapter;
 import shared.Utils;
-import shared.messages.GraphAction;
-import shared.messages.SelectMsg;
-import shared.messages.TaskManagerInitMsg;
-import shared.messages.TaskManagerAnnounceMsg;
+import shared.messages.*;
 import shared.messages.graphchanges.*;
 import shared.messages.vertexcentric.*;
 import shared.vertexcentric.InOutboxImpl;
@@ -83,6 +80,7 @@ public class TaskManagerActor  extends AbstractActor {
                 match(ChangeEdgeMsg.class, this::onChangeEdgeMsg). //
                 match(InstallComputationMsg.class, this::onInstallComputationMsg). //
                 match(SelectMsg.class, this::onSelectMsg).
+                match(PartitionMsg.class, this::onPartitionMsg).
                 match(GraphAction.class, this::onGraphAction).
                 match(StartComputationMsg.class, this::onStartComputationMsg). //
                 match(ComputationMsg.class, this::onComputationMsg). //
@@ -165,6 +163,13 @@ public class TaskManagerActor  extends AbstractActor {
         log.info(msg.toString());
         this.workers.values().stream().forEach(workers -> workers.tell(msg, self()));
     }
+
+
+    private final void onPartitionMsg(PartitionMsg msg){
+        log.info(msg.toString());
+        this.workers.values().stream().forEach(workers -> workers.tell(msg, self()));
+    }
+
 
 
     private final void onStartComputationMsg(StartComputationMsg msg) {

@@ -256,7 +256,7 @@ public class WorkerActor  extends AbstractActor {
 
                     //if the edge already exists
                     edgeSetColl=edges.get(msg.getSource());
-                    e = new Edge(msg.getSource(), msg.getDestination());
+                    e = new Edge(msg.getSource(), msg.getDestination(),msg.getState());
 
                     //check if there are no matching edges before
                     if(edgeSetColl==null){
@@ -548,6 +548,7 @@ public class WorkerActor  extends AbstractActor {
                                                                         for(Map.Entry<String, String[]> attEntry:attributes.entrySet()) {
                                                                             if (attEntry.getKey().equals(entry.getVarName())) {
                                                                                 String[] valEntries=attEntry.getValue();
+                                                                                selEdges.clear();
 
                                                                                 String oprandName=entry.getOprandName();
                                                                                 switch(entry.getOperator()) {
@@ -583,6 +584,10 @@ public class WorkerActor  extends AbstractActor {
                                                                                         break;
 
                                                                                 }
+                                                                                //selected edges
+                                                                                if(selEdgesSet.size()!=0){
+                                                                                    selEdges.put(eName,selEdgesSet);
+                                                                                }
 
 
                                                                             }
@@ -592,8 +597,7 @@ public class WorkerActor  extends AbstractActor {
 
                                             }
 
-                                    //selected edges
-                                    selEdges.put(eName,selEdgesSet);
+
                                 }
 
                         }
@@ -619,7 +623,7 @@ public class WorkerActor  extends AbstractActor {
 
     private final void onPartitionMsg(PartitionMsg msg){
         log.info(msg.toString());
-        log.info("at workers paritioning message");
+        
 
     }
 

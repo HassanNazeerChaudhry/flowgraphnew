@@ -1,6 +1,7 @@
 package shared.messages.graphchanges;
 
 import shared.graph.Edge;
+import shared.graph.GraphState;
 
 public abstract class ChangeEdgeMsg implements ChangeGraphMsg {
     private static final long serialVersionUID = 6374466780497705858L;
@@ -35,6 +36,8 @@ public abstract class ChangeEdgeMsg implements ChangeGraphMsg {
     public String getDestination() {
         return edge.getDestination();
     }
+
+    public GraphState getState(){return edge.getState();}
 
     public String getMsgType() {
         return msgType;

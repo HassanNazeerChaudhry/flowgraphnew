@@ -87,7 +87,7 @@ public class Client {
 
         //sending partitioning operation
         HashSet<PartitioningObject> partitioningObjectCollection=new HashSet();
-        PartitioningObject partitioningObject=new PartitioningObject("country");
+        PartitioningObject partitioningObject=new PartitioningObject("country", Modifier.VERTEX);
         partitioningObjectCollection.add(partitioningObject);
         PartitioningCollection partitioningCollection= new PartitioningCollection(partitioningObjectCollection);
         PartitionMsg partitionMsg= new PartitionMsg(partitioningCollection);

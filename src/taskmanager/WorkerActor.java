@@ -10,6 +10,8 @@ import shared.messages.SelectMsg;
 import shared.messages.graphchanges.*;
 import shared.messages.vertexcentric.*;
 import shared.model.enumerators.Modifier;
+import shared.model.graphcollection.PartitioningCollection;
+import shared.model.graphcollection.PartitioningObject;
 import shared.model.graphcollection.SelectCollection;
 import shared.model.graphcollection.SelectObject;
 import shared.vertexcentric.InOutboxImpl;
@@ -31,6 +33,8 @@ public class WorkerActor  extends AbstractActor {
 
     //name of selected vertex, <timestamp, object of vertex>
     private final Map<String, Vertex> selVertices = new HashMap<>();
+    //key is the property to partition and vertex
+    private final Map<String, Set<Vertex>> partVertices = new HashMap<>();
 
     //name of selected vertex, <timestamp, object of vertex>
     private final Map<String, Set<Edge>> selEdges = new HashMap<>();
@@ -623,7 +627,64 @@ public class WorkerActor  extends AbstractActor {
 
     private final void onPartitionMsg(PartitionMsg msg){
         log.info(msg.toString());
-        
+        PartitioningCollection partCollection=msg.getPartCollection();
+        HashSet<PartitioningObject> partObjectCollection=partCollection.getPartitioningCollection();
+        for (PartitioningObject entry : partObjectCollection) {
+
+            switch (entry.getModType()) {
+                case VERTEX:
+                    if(vertices!=null){
+                        for(Map.Entry<String, HashMap<Long, Vertex>> vEntry:vertices.entrySet()){
+                            String vName= vEntry.getKey();
+
+                             if( vName.equals("v5")){
+                                 String vName2= vName;
+                            }
+
+                            HashMap<Long, Vertex> vTimeStore= vEntry.getValue();
+                            Vertex vertex=(Vertex) vTimeStore.entrySet().stream().reduce((prev, next) -> next).orElse(null).getValue();
+
+                            if(vertex!=null) {
+                                if (!vertex.getIsDeleted()) {
+                                    GraphState graphState = vertex.getState();
+                                    Map<String, String[]> attributes = graphState.getAttributes();
+                                    String groupBy=   entry.getGroupBy();
+                                    String[] partAttribute=attributes.get(groupBy);
+
+                                    if(partVertices.containsKey(partAttribute[0].toString())){
+                                        Set<Vertex> setVertices= partVertices.get(partAttribute[0].toString());
+                                        setVertices.add(vertex);
+                                        partVertices.remove(partAttribute[0].toString());
+                                        partVertices.put(partAttribute[0].toString(),setVertices);
+                                    }else{
+                                        Set<Vertex> setVertices=new HashSet<>();
+                                        setVertices.add(vertex);
+                                        partVertices.put(partAttribute[0].toString(),setVertices);
+
+                                    }
+
+
+
+                                }
+                            }
+
+                        }
+                    }
+
+
+                    break;
+                case EDGE:
+
+
+                    break;
+
+
+            }
+        }
+
+
+
+
 
     }
 

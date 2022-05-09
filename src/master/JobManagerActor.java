@@ -9,6 +9,7 @@ import shared.Utils;
 import shared.messages.*;
 import shared.messages.graphchanges.*;
 import shared.messages.vertexcentric.*;
+import shared.model.graphcollection.ExtractCollection;
 import shared.model.graphcollection.GraphActions;
 import shared.model.graphcollection.PartitioningCollection;
 import shared.model.graphcollection.SelectCollection;
@@ -61,6 +62,7 @@ public class JobManagerActor extends AbstractActorWithStash {
                 match(InstallComputationMsg.class, this::onInstallComputationMsg). //
                 match(SelectMsg.class, this::onSelectMsg).
                 match(PartitionMsg.class, this::onPartitionMsg).
+                match(ExtractMsg.class, this::onExtractMsg).
                 build();
 
     }
@@ -172,6 +174,10 @@ public class JobManagerActor extends AbstractActorWithStash {
         graphActions.put("Part",msg.getPartCollection());
     }
 
+    private final void onExtractMsg(ExtractMsg msg){
+        log.info(msg.toString());
+        graphActions.put("Extract",msg.getExtractCollection());
+    }
 
 
     private final void onFailedComputationMsg(FailedComputationMsg msg) {
@@ -266,18 +272,28 @@ public class JobManagerActor extends AbstractActorWithStash {
         log.info(msg.toString());
 
         for(Map.Entry<String, GraphActions> graphItem:graphActions.entrySet()){
+
             String key=graphItem.getKey();
+
 
             switch(graphItem.getKey()) {
                 case "Sel":
                     this.taskManagers.values().stream().forEach(taskManagers -> taskManagers.tell(new SelectMsg((SelectCollection)graphItem.getValue()), self()));
                     break;
+
                 case "Part":
                     this.taskManagers.values().stream().forEach(taskManagers -> taskManagers.tell(new PartitionMsg((PartitioningCollection) graphItem.getValue()), self()));
                     break;
+
+                case "Extract":
+                    this.taskManagers.values().stream().forEach(taskManagers -> taskManagers.tell(new ExtractMsg((ExtractCollection)  graphItem.getValue()), self()));
+                    break;
+
+
                 default:
                     // code block
             }
+
 
         }
 

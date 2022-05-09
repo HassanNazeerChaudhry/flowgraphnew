@@ -81,6 +81,7 @@ public class TaskManagerActor  extends AbstractActor {
                 match(InstallComputationMsg.class, this::onInstallComputationMsg). //
                 match(SelectMsg.class, this::onSelectMsg).
                 match(PartitionMsg.class, this::onPartitionMsg).
+                match(ExtractMsg.class, this::onExtractMsg).
                 match(GraphAction.class, this::onGraphAction).
                 match(StartComputationMsg.class, this::onStartComputationMsg). //
                 match(ComputationMsg.class, this::onComputationMsg). //
@@ -166,6 +167,11 @@ public class TaskManagerActor  extends AbstractActor {
 
 
     private final void onPartitionMsg(PartitionMsg msg){
+        log.info(msg.toString());
+        this.workers.values().stream().forEach(workers -> workers.tell(msg, self()));
+    }
+
+    private final void onExtractMsg(ExtractMsg msg){
         log.info(msg.toString());
         this.workers.values().stream().forEach(workers -> workers.tell(msg, self()));
     }

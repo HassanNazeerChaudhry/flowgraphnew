@@ -5,19 +5,18 @@ import akka.actor.Props;
 import akka.event.Logging;
 import akka.event.LoggingAdapter;
 import shared.graph.*;
+import shared.messages.ExtractMsg;
 import shared.messages.PartitionMsg;
 import shared.messages.SelectMsg;
 import shared.messages.graphchanges.*;
 import shared.messages.vertexcentric.*;
 import shared.model.enumerators.Modifier;
-import shared.model.graphcollection.PartitioningCollection;
-import shared.model.graphcollection.PartitioningObject;
-import shared.model.graphcollection.SelectCollection;
-import shared.model.graphcollection.SelectObject;
+import shared.model.graphcollection.*;
 import shared.vertexcentric.InOutboxImpl;
 import shared.vertexcentric.VertexCentricComputation;
 
 
+import javax.swing.text.html.parser.Entity;
 import java.io.Serializable;
 import java.util.*;
 import java.util.function.Supplier;
@@ -35,6 +34,9 @@ public class WorkerActor  extends AbstractActor {
     private final Map<String, Vertex> selVertices = new HashMap<>();
     //key is the property to partition and vertex
     private final Map<String, Set<Vertex>> partVertices = new HashMap<>();
+
+    private final Map<String,HashMap<String, String>> extractVertices = new HashMap<>();
+
 
     //name of selected vertex, <timestamp, object of vertex>
     private final Map<String, Set<Edge>> selEdges = new HashMap<>();
@@ -65,6 +67,7 @@ public class WorkerActor  extends AbstractActor {
                 match(InstallComputationMsg.class, this::onInstallComputationMsg). //
                 match(SelectMsg.class, this::onSelectMsg).
                 match(PartitionMsg.class, this::onPartitionMsg).
+                match(ExtractMsg.class, this::onExtractMsg).
                 match(StartComputationMsg.class, this::onStartComputationMsg). //
                 match(ComputationMsg.class, this::onComputationMsg). //
                 match(ResultRequestMsg.class, this::onResultRequestMsg). //
@@ -530,9 +533,6 @@ public class WorkerActor  extends AbstractActor {
                     case EDGE:
                         Modifier m2=entry.getModType();
 
-                        if(edges.containsKey("v3")){
-                            HashMap<Long, Set<Edge>> e1= edges.get("v3");
-                        }
 
                         if(edges!=null){
                                 for(Map.Entry<String, HashMap<Long, Set<Edge>>> eEntry:edges.entrySet()){
@@ -637,9 +637,7 @@ public class WorkerActor  extends AbstractActor {
                         for(Map.Entry<String, HashMap<Long, Vertex>> vEntry:vertices.entrySet()){
                             String vName= vEntry.getKey();
 
-                             if( vName.equals("v5")){
-                                 String vName2= vName;
-                            }
+
 
                             HashMap<Long, Vertex> vTimeStore= vEntry.getValue();
                             Vertex vertex=(Vertex) vTimeStore.entrySet().stream().reduce((prev, next) -> next).orElse(null).getValue();
@@ -674,6 +672,21 @@ public class WorkerActor  extends AbstractActor {
 
                     break;
                 case EDGE:
+                    if(edges!=null) {
+                        for (Map.Entry<String, HashMap<Long, Set<Edge>>> eEntry : edges.entrySet()) {
+                            String eName = eEntry.getKey();
+
+
+                            HashMap<Long, Set<Edge>> eTimeStore = eEntry.getValue();
+
+                            Set<Edge> edgesSet = eTimeStore.entrySet().stream().reduce((prev, next) -> next).orElse(null).getValue();
+                            Set<Edge> selEdgesSet = new HashSet<Edge>();
+
+
+
+
+                        }
+                    }
 
 
                     break;
@@ -687,6 +700,51 @@ public class WorkerActor  extends AbstractActor {
 
 
     }
+
+
+
+    private final void onExtractMsg(ExtractMsg msg) {
+        ExtractCollection extractCollection = msg.getExtractCollection();
+        HashSet<ExtractObject> extractObjectCollection = extractCollection.getExtractCollection();
+        for (ExtractObject entry : extractObjectCollection) {
+            switch (entry.getModType()) {
+                case VERTEX:
+                    if (vertices != null && vertices.size()!=0) {
+                      String freeVar= entry.freeVar;
+
+
+
+                   for(Map.Entry<String, HashMap<Long, Vertex>> vEntry:vertices.entrySet()){
+                       HashMap<Long, Vertex> vTimeStore= vEntry.getValue();
+                       Vertex vertex= vTimeStore.entrySet().stream().reduce((prev, next) -> next).orElse(null).getValue();
+                       String name=vertex.getName();
+                       Map<String, String[]> attributes=vertex.getState().getAttributes();
+                       HashMap<String,String> attributeSet = new HashMap<String,String>();
+                       String[] attributeValSet;
+                       for(Map.Entry<String, String[]> attributeItem: attributes.entrySet()){
+                           if(attributeItem.getKey().equals(freeVar)){
+                               attributeValSet= attributeItem.getValue();
+                               attributeSet.put(attributeItem.getKey(), attributeValSet[0]);
+                           }
+                       }
+                       extractVertices.put(name,attributeSet);
+
+                   }
+
+
+
+                    }
+
+                case EDGE:
+                    if (edges != null) {
+
+
+                    }
+            }
+
+        }
+    }
+
 
 
 

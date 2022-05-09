@@ -4,30 +4,29 @@ import akka.actor.ActorRef;
 import akka.actor.ActorSystem;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigValueFactory;
-import org.antlr.v4.runtime.tree.ParseTree;
+
 import org.apache.flink.api.java.utils.ParameterTool;
 import shared.antlr4.InputParser;
-
+import org.antlr.v4.runtime.tree.ParseTree;
 import shared.antlr4.pattern.PatternParser;
 import shared.antlr4.visitor.PatternEntryVisitor;
+
 import shared.computations.NamesSet;
 import shared.computations.TraingleCounting;
-import shared.messages.PartitionMsg;
-import shared.messages.SelectMsg;
+
+import shared.messages.*;
 import shared.messages.vertexcentric.InstallComputationMsg;
-import shared.messages.StartMsg;
+import shared.messages.graphchanges.*;
+
 import shared.PropertyHandler;
 import shared.Utils;
 import com.typesafe.config.ConfigFactory;
-import shared.messages.graphchanges.*;
+
 import shared.model.Pattern;
-import shared.model.enumerators.Modifier;
-import shared.model.graphcollection.PartitioningCollection;
-import shared.model.graphcollection.PartitioningObject;
-import shared.model.graphcollection.SelectCollection;
-import shared.model.enumerators.ConjugationType;
-import shared.model.enumerators.Operator;
-import shared.model.graphcollection.SelectObject;
+import shared.model.graphcollection.*;
+import shared.model.enumerators.*;
+
+
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -81,18 +80,25 @@ public class Client {
         SelectObject selectObject=new SelectObject("age", Operator.GREATER,"25", ConjugationType.NULL, Modifier.EDGE);
         selectObjectCollection.add(selectObject);
         SelectCollection selectCollection= new SelectCollection(selectObjectCollection);
-        SelectMsg selectMsg= new SelectMsg(selectCollection);
-        clientActor.tell(selectMsg, ActorRef.noSender());
+         SelectMsg selectMsg= new SelectMsg(selectCollection);
+         clientActor.tell(selectMsg, ActorRef.noSender());
 
 
         //sending partitioning operation
-        HashSet<PartitioningObject> partitioningObjectCollection=new HashSet();
-        PartitioningObject partitioningObject=new PartitioningObject("country", Modifier.VERTEX);
-        partitioningObjectCollection.add(partitioningObject);
-        PartitioningCollection partitioningCollection= new PartitioningCollection(partitioningObjectCollection);
-        PartitionMsg partitionMsg= new PartitionMsg(partitioningCollection);
-        clientActor.tell(partitionMsg, ActorRef.noSender());
+        // HashSet<PartitioningObject> partitioningObjectCollection=new HashSet();
+        // PartitioningObject partitioningObject=new PartitioningObject("country", Modifier.VERTEX);
+        // partitioningObjectCollection.add(partitioningObject);
+        // PartitioningCollection partitioningCollection= new PartitioningCollection(partitioningObjectCollection);
+        // PartitionMsg partitionMsg= new PartitionMsg(partitioningCollection);
+        // clientActor.tell(partitionMsg, ActorRef.noSender());
 
+        //sending extraction operation
+        HashSet<ExtractObject> ExtractObjectCollection=new HashSet();
+        ExtractObject extractObject=new ExtractObject("country", Modifier.VERTEX);
+        ExtractObjectCollection.add(extractObject);
+        ExtractCollection extractionCollection= new ExtractCollection(ExtractObjectCollection);
+        ExtractMsg extractMsg=new ExtractMsg(extractionCollection);
+        clientActor.tell(extractMsg, ActorRef.noSender());
 
 
 

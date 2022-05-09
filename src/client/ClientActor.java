@@ -5,6 +5,7 @@ import akka.actor.ActorSelection;
 import akka.actor.Props;
 import akka.event.Logging;
 import akka.event.LoggingAdapter;
+import shared.messages.ExtractMsg;
 import shared.messages.PartitionMsg;
 import shared.messages.SelectMsg;
 import shared.messages.vertexcentric.InstallComputationMsg;
@@ -40,6 +41,7 @@ public class ClientActor extends AbstractActor {
                 match(ChangeVertexMsg.class, this::onChangeVertexMsg).
                 match(SelectMsg.class, this::onSelectMsg).
                 match(PartitionMsg.class, this::onPartitionMsg).
+                match(ExtractMsg.class, this::onExtractMsg).
                 match(InstallComputationMsg.class, this::onInstallComputationMsg).
                 build();
     }
@@ -73,6 +75,14 @@ public class ClientActor extends AbstractActor {
         log.info("Partition Msg at client");
         jobManager.tell(msg, self());
     }
+
+
+    public void onExtractMsg(ExtractMsg msg){
+        log.info("Extract Msg at client");
+        jobManager.tell(msg, self());
+    }
+
+
 
 
     public void onInstallComputationMsg(InstallComputationMsg msg){

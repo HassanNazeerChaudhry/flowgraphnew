@@ -15,6 +15,8 @@ import shared.computations.NamesSet;
 import shared.computations.TraingleCounting;
 
 import shared.messages.*;
+import shared.messages.GraphAction.GraphActionsMsg;
+import shared.messages.GraphAction.InstallPatternMsg;
 import shared.messages.vertexcentric.InstallComputationMsg;
 import shared.messages.graphchanges.*;
 
@@ -32,7 +34,9 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 
 public class Client {
 
@@ -59,7 +63,8 @@ public class Client {
         PatternEntryVisitor patternEntryVisitor= new PatternEntryVisitor();
         Pattern pattern= patternEntryVisitor.visit(antlrAST);
 
-
+        //container for all events sent by the client
+        Map<String, GraphActions> graphActions= new HashMap<>();
 
         if (Utils.waitConnection(jobManagerAddr, jobManagerPort, null)) {
             clientActor = sys.actorOf(ClientActor.props(jobManager), "Client");
@@ -69,37 +74,73 @@ public class Client {
 
         clientActor.tell(new StartMsg(), ActorRef.noSender());
 
+
         //sending compuation traingle counting
         final InstallComputationMsg<NamesSet, HashSet<HashSet<String>>> compMsg = new InstallComputationMsg<>("TraingleCounting",
                 () -> new TraingleCounting());
-        clientActor.tell(compMsg, ActorRef.noSender());
+       // clientActor.tell(compMsg, ActorRef.noSender());
+        graphActions.put("compute",compMsg);
 
 
         //sending select operation
-        HashSet<SelectObject> selectObjectCollection=new HashSet();
-        SelectObject selectObject=new SelectObject("age", Operator.GREATER,"25", ConjugationType.NULL, Modifier.EDGE);
-        selectObjectCollection.add(selectObject);
-        SelectCollection selectCollection= new SelectCollection(selectObjectCollection);
-         SelectMsg selectMsg= new SelectMsg(selectCollection);
-         clientActor.tell(selectMsg, ActorRef.noSender());
+        SelectObject selectObject=new SelectObject("age", Operator.GREATER,"18", ConjugationType.NULL, Modifier.EDGE);
+        graphActions.put("select",selectObject);
 
 
         //sending partitioning operation
-        // HashSet<PartitioningObject> partitioningObjectCollection=new HashSet();
-        // PartitioningObject partitioningObject=new PartitioningObject("country", Modifier.VERTEX);
-        // partitioningObjectCollection.add(partitioningObject);
-        // PartitioningCollection partitioningCollection= new PartitioningCollection(partitioningObjectCollection);
-        // PartitionMsg partitionMsg= new PartitionMsg(partitioningCollection);
-        // clientActor.tell(partitionMsg, ActorRef.noSender());
+         PartitioningObject partitioningObject=new PartitioningObject("country", Modifier.VERTEX);
+         graphActions.put("Partitioning",partitioningObject);
 
         //sending extraction operation
-        HashSet<ExtractObject> ExtractObjectCollection=new HashSet();
-        ExtractObject extractObject=new ExtractObject("country", Modifier.VERTEX);
-        ExtractObjectCollection.add(extractObject);
-        ExtractCollection extractionCollection= new ExtractCollection(ExtractObjectCollection);
-        ExtractMsg extractMsg=new ExtractMsg(extractionCollection);
-        clientActor.tell(extractMsg, ActorRef.noSender());
+          ExtractObject extractObject=new ExtractObject("country", Modifier.VERTEX);
+          graphActions.put("extract",extractObject);
 
+        //Streaming operation
+        StreamOperatorObject streamOperatorObject=new StreamOperatorObject(StreamOps.AVG, "age");
+        graphActions.put("streamOP",streamOperatorObject);
+
+
+        // evaluate operator operation
+        EvaluateObject evaluateObject=new EvaluateObject(Operator.GREATEREQUAL,30);
+        graphActions.put("evaluate",evaluateObject);
+
+
+        // evaluate operator operation
+        FollowByObject followedByObject=new FollowByObject(7);
+        graphActions.put("followedBy",followedByObject);
+
+
+        //sending compuation traingle counting
+        final InstallComputationMsg<NamesSet, HashSet<HashSet<String>>> compMsg1 = new InstallComputationMsg<>("TraingleCounting",
+                () -> new TraingleCounting());
+        // clientActor.tell(compMsg, ActorRef.noSender());
+        graphActions.put("compute",compMsg1);
+
+
+        //sending select operation
+        SelectObject selectObject1=new SelectObject("age", Operator.GREATER,"18", ConjugationType.NULL, Modifier.EDGE);
+        graphActions.put("select",selectObject1);
+
+
+        //sending partitioning operation
+        PartitioningObject partitioningObject1=new PartitioningObject("country", Modifier.VERTEX);
+        graphActions.put("Partitioning",partitioningObject1);
+
+        //sending extraction operation
+        ExtractObject extractObject1=new ExtractObject("country", Modifier.VERTEX);
+        graphActions.put("extract",extractObject1);
+
+        //Streaming operation
+        StreamOperatorObject streamOperatorObject1=new StreamOperatorObject(StreamOps.AVG, "age");
+        graphActions.put("streamOP",streamOperatorObject1);
+
+
+        // evaluate operator operation
+        EvaluateObject evaluateObject1=new EvaluateObject(Operator.GREATEREQUAL,30);
+        graphActions.put("evaluate",evaluateObject1);
+
+
+        clientActor.tell(new InstallPatternMsg(graphActions), ActorRef.noSender());
 
 
         BufferedReader reader;

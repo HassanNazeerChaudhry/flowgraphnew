@@ -5,9 +5,9 @@ import akka.actor.Props;
 import akka.event.Logging;
 import akka.event.LoggingAdapter;
 import shared.graph.*;
-import shared.messages.ExtractMsg;
-import shared.messages.PartitionMsg;
-import shared.messages.SelectMsg;
+import shared.messages.GraphAction.ExtractMsg;
+import shared.messages.GraphAction.PartitionMsg;
+import shared.messages.GraphAction.SelectMsg;
 import shared.messages.graphchanges.*;
 import shared.messages.vertexcentric.*;
 import shared.model.enumerators.Modifier;
@@ -16,7 +16,6 @@ import shared.vertexcentric.InOutboxImpl;
 import shared.vertexcentric.VertexCentricComputation;
 
 
-import javax.swing.text.html.parser.Entity;
 import java.io.Serializable;
 import java.util.*;
 import java.util.function.Supplier;
@@ -457,14 +456,12 @@ public class WorkerActor  extends AbstractActor {
     private final void onSelectMsg(SelectMsg msg){
         log.info(msg.toString());
 
-        SelectCollection selectCollection=msg.getSelCollection();
-        HashSet<SelectObject> selectObjectCollection=selectCollection.getSelectCollection();
+        SelectObject selectObject=msg.getSelectObject();
 
-        for (SelectObject entry : selectObjectCollection) {
 
-                switch(entry.getModType()) {
+                switch(selectObject.getModType()) {
                     case VERTEX:
-                        Modifier m1=entry.getModType();
+                        Modifier m1=selectObject.getModType();
                      if(vertices!=null){
                             for(Map.Entry<String, HashMap<Long, Vertex>> vEntry:vertices.entrySet()){
                                        String vName= vEntry.getKey();
@@ -481,12 +478,12 @@ public class WorkerActor  extends AbstractActor {
 
 
                                               for(Map.Entry<String, String[]> attEntry:attributes.entrySet()){
-                                                 if(attEntry.getKey().equals(entry.getVarName())){
+                                                 if(attEntry.getKey().equals(selectObject.getVarName())){
 
                                                         String[] valEntries=attEntry.getValue();
 
-                                                        String oprandName=entry.getOprandName();
-                                                     switch(entry.getOperator()) {
+                                                        String oprandName=selectObject.getOprandName();
+                                                     switch(selectObject.getOperator()) {
                                                          case EQUAL:
                                                                if(valEntries[0].equals(oprandName)){
                                                                    selVertices.put(vName, vertex);
@@ -531,7 +528,7 @@ public class WorkerActor  extends AbstractActor {
 
                         break;
                     case EDGE:
-                        Modifier m2=entry.getModType();
+                        Modifier m2=selectObject.getModType();
 
 
                         if(edges!=null){
@@ -550,12 +547,12 @@ public class WorkerActor  extends AbstractActor {
                                                                 Map<String, String[]> attributes=graphState.getAttributes();
 
                                                                         for(Map.Entry<String, String[]> attEntry:attributes.entrySet()) {
-                                                                            if (attEntry.getKey().equals(entry.getVarName())) {
+                                                                            if (attEntry.getKey().equals(selectObject.getVarName())) {
                                                                                 String[] valEntries=attEntry.getValue();
                                                                                 selEdges.clear();
 
-                                                                                String oprandName=entry.getOprandName();
-                                                                                switch(entry.getOperator()) {
+                                                                                String oprandName=selectObject.getOprandName();
+                                                                                switch(selectObject.getOperator()) {
                                                                                     case EQUAL:
                                                                                         if(valEntries[0].equals(oprandName)){
 
@@ -609,7 +606,7 @@ public class WorkerActor  extends AbstractActor {
 
                 }
 
-        }
+
 
 
 
@@ -627,11 +624,11 @@ public class WorkerActor  extends AbstractActor {
 
     private final void onPartitionMsg(PartitionMsg msg){
         log.info(msg.toString());
-        PartitioningCollection partCollection=msg.getPartCollection();
-        HashSet<PartitioningObject> partObjectCollection=partCollection.getPartitioningCollection();
-        for (PartitioningObject entry : partObjectCollection) {
+        PartitioningObject partObject=msg.getPartitioningObject();
 
-            switch (entry.getModType()) {
+
+
+            switch (partObject.getModType()) {
                 case VERTEX:
                     if(vertices!=null){
                         for(Map.Entry<String, HashMap<Long, Vertex>> vEntry:vertices.entrySet()){
@@ -646,7 +643,7 @@ public class WorkerActor  extends AbstractActor {
                                 if (!vertex.getIsDeleted()) {
                                     GraphState graphState = vertex.getState();
                                     Map<String, String[]> attributes = graphState.getAttributes();
-                                    String groupBy=   entry.getGroupBy();
+                                    String groupBy=   partObject.getGroupBy();
                                     String[] partAttribute=attributes.get(groupBy);
 
                                     if(partVertices.containsKey(partAttribute[0].toString())){
@@ -693,7 +690,7 @@ public class WorkerActor  extends AbstractActor {
 
 
             }
-        }
+
 
 
 
@@ -704,45 +701,58 @@ public class WorkerActor  extends AbstractActor {
 
 
     private final void onExtractMsg(ExtractMsg msg) {
-        ExtractCollection extractCollection = msg.getExtractCollection();
-        HashSet<ExtractObject> extractObjectCollection = extractCollection.getExtractCollection();
-        for (ExtractObject entry : extractObjectCollection) {
-            switch (entry.getModType()) {
+        ExtractObject extractObject = msg.getExtractObject();
+
+
+            switch (extractObject.getModType()) {
                 case VERTEX:
                     if (vertices != null && vertices.size()!=0) {
-                      String freeVar= entry.freeVar;
+                      String freeVar= extractObject.freeVar;
 
-
-
-                   for(Map.Entry<String, HashMap<Long, Vertex>> vEntry:vertices.entrySet()){
-                       HashMap<Long, Vertex> vTimeStore= vEntry.getValue();
-                       Vertex vertex= vTimeStore.entrySet().stream().reduce((prev, next) -> next).orElse(null).getValue();
-                       String name=vertex.getName();
-                       Map<String, String[]> attributes=vertex.getState().getAttributes();
-                       HashMap<String,String> attributeSet = new HashMap<String,String>();
-                       String[] attributeValSet;
-                       for(Map.Entry<String, String[]> attributeItem: attributes.entrySet()){
-                           if(attributeItem.getKey().equals(freeVar)){
-                               attributeValSet= attributeItem.getValue();
-                               attributeSet.put(attributeItem.getKey(), attributeValSet[0]);
+                           for(Map.Entry<String, HashMap<Long, Vertex>> vEntry:vertices.entrySet()){
+                               HashMap<Long, Vertex> vTimeStore= vEntry.getValue();
+                               Vertex vertex= vTimeStore.entrySet().stream().reduce((prev, next) -> next).orElse(null).getValue();
+                               if(!vertex.getIsDeleted()){
+                                       String name=vertex.getName();
+                                       Map<String, String[]> attributes=vertex.getState().getAttributes();
+                                       HashMap<String,String> attributeSet = new HashMap<String,String>();
+                                       String[] attributeValSet;
+                                       for(Map.Entry<String, String[]> attributeItem: attributes.entrySet()){
+                                           if(attributeItem.getKey().equals(freeVar)){
+                                               attributeValSet= attributeItem.getValue();
+                                               attributeSet.put(attributeItem.getKey(), attributeValSet[0]);
+                                           }
+                                       }
+                                       extractVertices.put(name,attributeSet);
+                               }
                            }
-                       }
-                       extractVertices.put(name,attributeSet);
-
-                   }
-
-
 
                     }
 
                 case EDGE:
-                    if (edges != null) {
+                    if (edges != null && edges.size()!=0) {
 
+                            for(Map.Entry<String,HashMap<Long, Set<Edge>>> eEntry:edges.entrySet()){
+
+                                HashMap<Long, Set<Edge>> eTimeStore= eEntry.getValue();
+
+                                Set<Edge> setEdge= eTimeStore.entrySet().stream().reduce((prev, next) -> next).orElse(null).getValue();
+
+                                for(Edge edgeElement:setEdge) {
+                                    if (edges != null) {
+                                        if (!edgeElement.getIsDeleted()) {
+
+                                        }
+                                    }
+                                }
+
+
+                            }
 
                     }
             }
 
-        }
+
     }
 
 

@@ -6,7 +6,7 @@ import shared.model.enumerators.Operator;
 
 import java.io.Serializable;
 
-public class SelectObject implements Serializable {
+public class SelectObject extends GraphActions implements Serializable {
     public Modifier modType;
     public   String varName;
     public Operator operator;

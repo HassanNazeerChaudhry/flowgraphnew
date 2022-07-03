@@ -5,7 +5,7 @@ import shared.model.enumerators.Modifier;
 
 import java.io.Serializable;
 
-public class PartitioningObject implements Serializable {
+public class PartitioningObject extends GraphActions implements Serializable {
     public   String groupBy;
     public Modifier modType;
 

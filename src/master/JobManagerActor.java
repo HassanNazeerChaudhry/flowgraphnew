@@ -7,12 +7,12 @@ import akka.event.Logging;
 import akka.event.LoggingAdapter;
 import shared.Utils;
 import shared.messages.*;
+import shared.messages.GraphAction.ExtractMsg;
+import shared.messages.GraphAction.GraphActionsMsg;
+import shared.messages.GraphAction.PartitionMsg;
+import shared.messages.GraphAction.SelectMsg;
 import shared.messages.graphchanges.*;
 import shared.messages.vertexcentric.*;
-import shared.model.graphcollection.ExtractCollection;
-import shared.model.graphcollection.GraphActions;
-import shared.model.graphcollection.PartitioningCollection;
-import shared.model.graphcollection.SelectCollection;
 import shared.vertexcentric.*;
 
 
@@ -32,7 +32,7 @@ public class JobManagerActor extends AbstractActorWithStash {
 
     //variables for iterative computation
     private Map<Integer, InOutboxImpl> superstepMsgs = new HashMap<>();
-    private Map<String, GraphActions> graphActions= new HashMap<>();
+    private Map<String, shared.model.graphcollection.GraphActions> graphActions= new HashMap<>();
     private int receivedReplies = 0;
     private int expectedReplies = 0;
 
@@ -52,14 +52,14 @@ public class JobManagerActor extends AbstractActorWithStash {
         return receiveBuilder().
                 match(StartMsg.class, this::onStartMessage).
                 match(TaskManagerAnnounceMsg.class, this::onTaskManagerAnnounceMsg).
+                match(InstallComputationMsg.class, this::onInstallComputationMsg). //
                 build();
     }
 
     private final Receive receiveChangeState(){
         return receiveBuilder().
                 match(ChangeEdgeMsg.class, this::onChangeEdgeMsg). //
-                match(ChangeVertexMsg.class, this::onChangeVertexMsg). //
-                match(InstallComputationMsg.class, this::onInstallComputationMsg). //
+                match(ChangeVertexMsg.class, this::onChangeVertexMsg).
                 match(SelectMsg.class, this::onSelectMsg).
                 match(PartitionMsg.class, this::onPartitionMsg).
                 match(ExtractMsg.class, this::onExtractMsg).
@@ -85,7 +85,7 @@ public class JobManagerActor extends AbstractActorWithStash {
 
     private final Receive graphActionState() {
         return receiveBuilder(). //
-                match(GraphAction.class, this::onGraphActionMsg). //
+                match(GraphActionsMsg.class, this::onGraphActionMsg). //
                 match(ChangeGraphMsg.class, msg -> stash()). //
                 build();
     }
@@ -100,9 +100,19 @@ public class JobManagerActor extends AbstractActorWithStash {
             final TaskManagerInitMsg initMsg = new TaskManagerInitMsg(taskManagers, numWorkers);
             taskManager.tell(initMsg, self());
         }
-        getContext().become(receiveChangeState());
+
 
     }
+
+
+    private final void onInstallComputationMsg(InstallComputationMsg msg){
+        log.info(msg.toString());
+        computation = (VertexCentricComputation) msg.getComputationSupplier().get();
+        this.taskManagers.values().stream().forEach(taskManagers -> taskManagers.tell(msg, self()));
+
+        getContext().become(receiveChangeState());
+    }
+
 
 
     public void onTaskManagerAnnounceMsg(TaskManagerAnnounceMsg msg){
@@ -111,6 +121,9 @@ public class JobManagerActor extends AbstractActorWithStash {
         numWorkers += msg.getNumWorkers();
 
     }
+
+
+
 
 
    //TODO: find more better partitioning scheme, right now its just hashing
@@ -157,11 +170,7 @@ public class JobManagerActor extends AbstractActorWithStash {
 
     }
 
-    private final void onInstallComputationMsg(InstallComputationMsg msg){
-        log.info(msg.toString());
-        computation = (VertexCentricComputation) msg.getComputationSupplier().get();
-        this.taskManagers.values().stream().forEach(taskManagers -> taskManagers.tell(msg, self()));
-    }
+
 
 
     private final void onSelectMsg(SelectMsg msg){
@@ -192,7 +201,7 @@ public class JobManagerActor extends AbstractActorWithStash {
         log.info("Computation message in job manager");
 
         getContext().become(graphActionState());
-        taskManagers.values().stream().forEach(taskManagers -> taskManagers.tell(new GraphAction(), self()));
+        taskManagers.values().stream().forEach(taskManagers -> taskManagers.tell(new GraphActionsMsg(), self()));
 
           /*  for (final String recipientName : (Set<String>) msg.recipients()) {
                 for (final MsgSenderPair p : (List<MsgSenderPair>) msg.messagesFor(recipientName)) {
@@ -268,10 +277,10 @@ public class JobManagerActor extends AbstractActorWithStash {
     }
 
 
-    private final void onGraphActionMsg(GraphAction msg){
+    private final void onGraphActionMsg(GraphActionsMsg msg){
         log.info(msg.toString());
 
-        for(Map.Entry<String, GraphActions> graphItem:graphActions.entrySet()){
+        for(Map.Entry<String, shared.model.graphcollection.GraphActions> graphItem:graphActions.entrySet()){
 
             String key=graphItem.getKey();
 

@@ -5,6 +5,10 @@ import akka.event.Logging;
 import akka.event.LoggingAdapter;
 import shared.Utils;
 import shared.messages.*;
+import shared.messages.GraphAction.ExtractMsg;
+import shared.messages.GraphAction.GraphActionsMsg;
+import shared.messages.GraphAction.PartitionMsg;
+import shared.messages.GraphAction.SelectMsg;
 import shared.messages.graphchanges.*;
 import shared.messages.vertexcentric.*;
 import shared.vertexcentric.InOutboxImpl;
@@ -82,7 +86,7 @@ public class TaskManagerActor  extends AbstractActor {
                 match(SelectMsg.class, this::onSelectMsg).
                 match(PartitionMsg.class, this::onPartitionMsg).
                 match(ExtractMsg.class, this::onExtractMsg).
-                match(GraphAction.class, this::onGraphAction).
+                match(GraphActionsMsg.class, this::onGraphAction).
                 match(StartComputationMsg.class, this::onStartComputationMsg). //
                 match(ComputationMsg.class, this::onComputationMsg). //
                 match(ResultRequestMsg.class, this::onResultRequestMsg). //
@@ -247,8 +251,8 @@ public class TaskManagerActor  extends AbstractActor {
 
     }
 
-    private final void onGraphAction(GraphAction msg){
-        jobManager.tell(new GraphAction(), sender());
+    private final void onGraphAction(GraphActionsMsg msg){
+        jobManager.tell(new GraphActionsMsg(), sender());
     }
 
 

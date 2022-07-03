@@ -5,7 +5,7 @@ import shared.model.enumerators.Modifier;
 import java.io.Serializable;
 
 
-public class ExtractObject implements Serializable {
+public class ExtractObject extends GraphActions implements Serializable   {
     public   String freeVar;
     public Modifier modType;
 

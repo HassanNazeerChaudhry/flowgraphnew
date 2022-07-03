@@ -2,12 +2,13 @@ package shared.messages.vertexcentric;
 
 import java.io.Serializable;
 import java.util.function.Supplier;
+
+import shared.model.graphcollection.GraphActions;
 import shared.vertexcentric.VertexCentricComputation;
 
 
 
-public class InstallComputationMsg<MsgType extends Serializable, OutputType extends Serializable>
-        implements Serializable {
+public class InstallComputationMsg<MsgType extends Serializable, OutputType extends Serializable> extends GraphActions {
     private static final long serialVersionUID = -3747071909430802205L;
 
     private final String name;

@@ -15,8 +15,8 @@ import shared.computations.NamesSet;
 import shared.computations.TraingleCounting;
 
 import shared.messages.*;
-import shared.messages.GraphAction.GraphActionsMsg;
-import shared.messages.GraphAction.InstallPatternMsg;
+import shared.messages.GraphAction.*;
+
 import shared.messages.vertexcentric.InstallComputationMsg;
 import shared.messages.graphchanges.*;
 
@@ -25,7 +25,6 @@ import shared.Utils;
 import com.typesafe.config.ConfigFactory;
 
 import shared.model.Pattern;
-import shared.model.graphcollection.*;
 import shared.model.enumerators.*;
 
 
@@ -34,9 +33,8 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Map;
+import java.util.LinkedHashMap;
 
 public class Client {
 
@@ -64,7 +62,8 @@ public class Client {
         Pattern pattern= patternEntryVisitor.visit(antlrAST);
 
         //container for all events sent by the client
-        Map<String, GraphActions> graphActions= new HashMap<>();
+        LinkedHashMap<String, GraphActions> graphActions= new LinkedHashMap<>();
+
 
         if (Utils.waitConnection(jobManagerAddr, jobManagerPort, null)) {
             clientActor = sys.actorOf(ClientActor.props(jobManager), "Client");
@@ -76,68 +75,68 @@ public class Client {
 
 
         //sending compuation traingle counting
-        final InstallComputationMsg<NamesSet, HashSet<HashSet<String>>> compMsg = new InstallComputationMsg<>("TraingleCounting",
+        final InstallComputationMsg<NamesSet, HashSet<HashSet<String>>> compMsg1 = new InstallComputationMsg<>("TraingleCounting",
                 () -> new TraingleCounting());
-       // clientActor.tell(compMsg, ActorRef.noSender());
-        graphActions.put("compute",compMsg);
+        graphActions.put("compute1",compMsg1);
 
 
         //sending select operation
-        SelectObject selectObject=new SelectObject("age", Operator.GREATER,"18", ConjugationType.NULL, Modifier.EDGE);
-        graphActions.put("select",selectObject);
+        SelectMsg selectObject1=new SelectMsg(Modifier.VERTEX, "age", Operator.GREATER,"18", ConjugationType.NULL);
+        graphActions.put("select1",selectObject1);
 
 
         //sending partitioning operation
-         PartitioningObject partitioningObject=new PartitioningObject("country", Modifier.VERTEX);
-         graphActions.put("Partitioning",partitioningObject);
+        PartitionMsg partitioningObject1=new PartitionMsg("country", Modifier.VERTEX);
+         graphActions.put("partitioning1",partitioningObject1);
+
 
         //sending extraction operation
-          ExtractObject extractObject=new ExtractObject("country", Modifier.VERTEX);
-          graphActions.put("extract",extractObject);
+        ExtractMsg extractObject1=new ExtractMsg("country", Modifier.VERTEX);
+          graphActions.put("extract1",extractObject1);
 
         //Streaming operation
-        StreamOperatorObject streamOperatorObject=new StreamOperatorObject(StreamOps.AVG, "age");
-        graphActions.put("streamOP",streamOperatorObject);
+        StreamOperatorMsg streamOperatorObject1=new StreamOperatorMsg(StreamOps.AVG, "age");
+        graphActions.put("streamOP1",streamOperatorObject1);
 
 
         // evaluate operator operation
-        EvaluateObject evaluateObject=new EvaluateObject(Operator.GREATEREQUAL,30);
-        graphActions.put("evaluate",evaluateObject);
+        EvaluateMsg evaluateObject1=new EvaluateMsg(Operator.GREATEREQUAL,30);
+        graphActions.put("evaluate1",evaluateObject1);
 
 
         // evaluate operator operation
-        FollowByObject followedByObject=new FollowByObject(7);
-        graphActions.put("followedBy",followedByObject);
+        FollowByMsg followedByObject1=new FollowByMsg(7);
+        graphActions.put("followedBy1",followedByObject1);
 
 
         //sending compuation traingle counting
-        final InstallComputationMsg<NamesSet, HashSet<HashSet<String>>> compMsg1 = new InstallComputationMsg<>("TraingleCounting",
+        final InstallComputationMsg<NamesSet, HashSet<HashSet<String>>> compMsg2 = new InstallComputationMsg<>("TraingleCounting",
                 () -> new TraingleCounting());
-        // clientActor.tell(compMsg, ActorRef.noSender());
-        graphActions.put("compute",compMsg1);
+        graphActions.put("compute2",compMsg2);
+
 
 
         //sending select operation
-        SelectObject selectObject1=new SelectObject("age", Operator.GREATER,"18", ConjugationType.NULL, Modifier.EDGE);
-        graphActions.put("select",selectObject1);
+        SelectMsg selectObject2=new SelectMsg(Modifier.VERTEX,"age", Operator.GREATER,"18", ConjugationType.NULL);
+        graphActions.put("select2",selectObject2);
 
 
         //sending partitioning operation
-        PartitioningObject partitioningObject1=new PartitioningObject("country", Modifier.VERTEX);
-        graphActions.put("Partitioning",partitioningObject1);
+        PartitionMsg partitioningObject2=new PartitionMsg("country", Modifier.VERTEX);
+        graphActions.put("partitioning2",partitioningObject2);
 
         //sending extraction operation
-        ExtractObject extractObject1=new ExtractObject("country", Modifier.VERTEX);
-        graphActions.put("extract",extractObject1);
+        ExtractMsg extractObject2=new ExtractMsg("country", Modifier.VERTEX);
+        graphActions.put("extract2",extractObject2);
 
         //Streaming operation
-        StreamOperatorObject streamOperatorObject1=new StreamOperatorObject(StreamOps.AVG, "age");
-        graphActions.put("streamOP",streamOperatorObject1);
+        StreamOperatorMsg streamOperatorObject2=new StreamOperatorMsg(StreamOps.AVG, "age");
+        graphActions.put("streamOP2",streamOperatorObject2);
 
 
         // evaluate operator operation
-        EvaluateObject evaluateObject1=new EvaluateObject(Operator.GREATEREQUAL,30);
-        graphActions.put("evaluate",evaluateObject1);
+        EvaluateMsg evaluateObject2=new EvaluateMsg(Operator.GREATEREQUAL,30);
+        graphActions.put("evaluate2",evaluateObject2);
 
 
         clientActor.tell(new InstallPatternMsg(graphActions), ActorRef.noSender());

@@ -7,10 +7,7 @@ import akka.event.Logging;
 import akka.event.LoggingAdapter;
 import shared.Utils;
 import shared.messages.*;
-import shared.messages.GraphAction.ExtractMsg;
-import shared.messages.GraphAction.GraphActionsMsg;
-import shared.messages.GraphAction.PartitionMsg;
-import shared.messages.GraphAction.SelectMsg;
+import shared.messages.GraphAction.*;
 import shared.messages.graphchanges.*;
 import shared.messages.vertexcentric.*;
 import shared.vertexcentric.*;
@@ -26,13 +23,14 @@ public class JobManagerActor extends AbstractActorWithStash {
     //list of task managers and workers
     private final NavigableMap<Integer, ActorRef> taskManagers = new TreeMap<>();
     private int numWorkers = 0;
+    private int lazyWindow; // duration till which evaluate is not started
 
     //computation to be performed
     private VertexCentricComputation computation = null;
 
     //variables for iterative computation
     private Map<Integer, InOutboxImpl> superstepMsgs = new HashMap<>();
-    private Map<String, shared.model.graphcollection.GraphActions> graphActions= new HashMap<>();
+    private Map<String, GraphActions> graphActions= new HashMap<>();
     private int receivedReplies = 0;
     private int expectedReplies = 0;
 
@@ -52,7 +50,7 @@ public class JobManagerActor extends AbstractActorWithStash {
         return receiveBuilder().
                 match(StartMsg.class, this::onStartMessage).
                 match(TaskManagerAnnounceMsg.class, this::onTaskManagerAnnounceMsg).
-                match(InstallComputationMsg.class, this::onInstallComputationMsg). //
+                match(InstallPatternMsg.class, this::onInstallPatternMsg).
                 build();
     }
 
@@ -60,9 +58,6 @@ public class JobManagerActor extends AbstractActorWithStash {
         return receiveBuilder().
                 match(ChangeEdgeMsg.class, this::onChangeEdgeMsg). //
                 match(ChangeVertexMsg.class, this::onChangeVertexMsg).
-                match(SelectMsg.class, this::onSelectMsg).
-                match(PartitionMsg.class, this::onPartitionMsg).
-                match(ExtractMsg.class, this::onExtractMsg).
                 build();
 
     }
@@ -104,6 +99,35 @@ public class JobManagerActor extends AbstractActorWithStash {
 
     }
 
+    public void onTaskManagerAnnounceMsg(TaskManagerAnnounceMsg msg){
+        log.info("Slave Annoucement message at jobmanager");
+        taskManagers.put(numWorkers, getSender());
+        numWorkers += msg.getNumWorkers();
+
+    }
+
+
+    private final void onInstallPatternMsg(InstallPatternMsg msg){
+        log.info(msg.toString());
+        graphActions=msg.getGraphActions();
+        FollowByMsg gAction= new FollowByMsg();
+
+        for (Map.Entry<String, GraphActions> e : graphActions.entrySet()) {
+            if (e.getKey().startsWith("followedBy")) {
+                 gAction=(FollowByMsg)e.getValue();
+            }
+        }
+
+        Integer lazyWindow=gAction.getTime();
+
+
+
+
+
+    }
+
+
+
 
     private final void onInstallComputationMsg(InstallComputationMsg msg){
         log.info(msg.toString());
@@ -115,12 +139,7 @@ public class JobManagerActor extends AbstractActorWithStash {
 
 
 
-    public void onTaskManagerAnnounceMsg(TaskManagerAnnounceMsg msg){
-        log.info("Slave Annoucement message at jobmanager");
-        taskManagers.put(numWorkers, getSender());
-        numWorkers += msg.getNumWorkers();
 
-    }
 
 
 
@@ -170,23 +189,6 @@ public class JobManagerActor extends AbstractActorWithStash {
 
     }
 
-
-
-
-    private final void onSelectMsg(SelectMsg msg){
-        log.info(msg.toString());
-        graphActions.put("Sel",msg.getSelCollection());
-    }
-
-    private final void onPartitionMsg(PartitionMsg msg){
-        log.info(msg.toString());
-        graphActions.put("Part",msg.getPartCollection());
-    }
-
-    private final void onExtractMsg(ExtractMsg msg){
-        log.info(msg.toString());
-        graphActions.put("Extract",msg.getExtractCollection());
-    }
 
 
     private final void onFailedComputationMsg(FailedComputationMsg msg) {
@@ -280,23 +282,25 @@ public class JobManagerActor extends AbstractActorWithStash {
     private final void onGraphActionMsg(GraphActionsMsg msg){
         log.info(msg.toString());
 
-        for(Map.Entry<String, shared.model.graphcollection.GraphActions> graphItem:graphActions.entrySet()){
+        for(Map.Entry<String, GraphActions> graphItem:graphActions.entrySet()){
 
             String key=graphItem.getKey();
 
 
             switch(graphItem.getKey()) {
                 case "Sel":
-                    this.taskManagers.values().stream().forEach(taskManagers -> taskManagers.tell(new SelectMsg((SelectCollection)graphItem.getValue()), self()));
+                    this.taskManagers.values().stream().forEach(taskManagers -> taskManagers.tell(graphItem.getValue(), self()));
                     break;
 
                 case "Part":
-                    this.taskManagers.values().stream().forEach(taskManagers -> taskManagers.tell(new PartitionMsg((PartitioningCollection) graphItem.getValue()), self()));
+                    this.taskManagers.values().stream().forEach(taskManagers -> taskManagers.tell(graphItem.getValue(), self()));
                     break;
 
                 case "Extract":
-                    this.taskManagers.values().stream().forEach(taskManagers -> taskManagers.tell(new ExtractMsg((ExtractCollection)  graphItem.getValue()), self()));
+                    this.taskManagers.values().stream().forEach(taskManagers -> taskManagers.tell(graphItem.getValue(), self()));
                     break;
+
+
 
 
                 default:

@@ -3,7 +3,7 @@ package shared.messages.vertexcentric;
 import java.io.Serializable;
 import java.util.function.Supplier;
 
-import shared.model.graphcollection.GraphActions;
+import shared.messages.GraphAction.GraphActions;
 import shared.vertexcentric.VertexCentricComputation;
 
 

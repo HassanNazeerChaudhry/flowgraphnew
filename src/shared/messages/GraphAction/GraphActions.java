@@ -1,4 +1,4 @@
-package shared.model.graphcollection;
+package shared.messages.GraphAction;
 
 import java.io.Serializable;
 

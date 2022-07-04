@@ -11,7 +11,6 @@ import shared.messages.GraphAction.SelectMsg;
 import shared.messages.graphchanges.*;
 import shared.messages.vertexcentric.*;
 import shared.model.enumerators.Modifier;
-import shared.model.graphcollection.*;
 import shared.vertexcentric.InOutboxImpl;
 import shared.vertexcentric.VertexCentricComputation;
 
@@ -456,12 +455,9 @@ public class WorkerActor  extends AbstractActor {
     private final void onSelectMsg(SelectMsg msg){
         log.info(msg.toString());
 
-        SelectObject selectObject=msg.getSelectObject();
-
-
-                switch(selectObject.getModType()) {
+                switch(msg.getModType()) {
                     case VERTEX:
-                        Modifier m1=selectObject.getModType();
+                        Modifier m1=msg.getModType();
                      if(vertices!=null){
                             for(Map.Entry<String, HashMap<Long, Vertex>> vEntry:vertices.entrySet()){
                                        String vName= vEntry.getKey();
@@ -478,12 +474,12 @@ public class WorkerActor  extends AbstractActor {
 
 
                                               for(Map.Entry<String, String[]> attEntry:attributes.entrySet()){
-                                                 if(attEntry.getKey().equals(selectObject.getVarName())){
+                                                 if(attEntry.getKey().equals(msg.getVarName())){
 
                                                         String[] valEntries=attEntry.getValue();
 
-                                                        String oprandName=selectObject.getOprandName();
-                                                     switch(selectObject.getOperator()) {
+                                                        String oprandName=msg.getOprandName();
+                                                     switch(msg.getOperator()) {
                                                          case EQUAL:
                                                                if(valEntries[0].equals(oprandName)){
                                                                    selVertices.put(vName, vertex);
@@ -528,7 +524,7 @@ public class WorkerActor  extends AbstractActor {
 
                         break;
                     case EDGE:
-                        Modifier m2=selectObject.getModType();
+                        Modifier m2=msg.getModType();
 
 
                         if(edges!=null){
@@ -547,12 +543,12 @@ public class WorkerActor  extends AbstractActor {
                                                                 Map<String, String[]> attributes=graphState.getAttributes();
 
                                                                         for(Map.Entry<String, String[]> attEntry:attributes.entrySet()) {
-                                                                            if (attEntry.getKey().equals(selectObject.getVarName())) {
+                                                                            if (attEntry.getKey().equals(msg.getVarName())) {
                                                                                 String[] valEntries=attEntry.getValue();
                                                                                 selEdges.clear();
 
-                                                                                String oprandName=selectObject.getOprandName();
-                                                                                switch(selectObject.getOperator()) {
+                                                                                String oprandName=msg.getOprandName();
+                                                                                switch(msg.getOperator()) {
                                                                                     case EQUAL:
                                                                                         if(valEntries[0].equals(oprandName)){
 
@@ -624,11 +620,8 @@ public class WorkerActor  extends AbstractActor {
 
     private final void onPartitionMsg(PartitionMsg msg){
         log.info(msg.toString());
-        PartitioningObject partObject=msg.getPartitioningObject();
 
-
-
-            switch (partObject.getModType()) {
+            switch (msg.getModType()) {
                 case VERTEX:
                     if(vertices!=null){
                         for(Map.Entry<String, HashMap<Long, Vertex>> vEntry:vertices.entrySet()){
@@ -643,7 +636,7 @@ public class WorkerActor  extends AbstractActor {
                                 if (!vertex.getIsDeleted()) {
                                     GraphState graphState = vertex.getState();
                                     Map<String, String[]> attributes = graphState.getAttributes();
-                                    String groupBy=   partObject.getGroupBy();
+                                    String groupBy=   msg.getGroupBy();
                                     String[] partAttribute=attributes.get(groupBy);
 
                                     if(partVertices.containsKey(partAttribute[0].toString())){
@@ -701,13 +694,13 @@ public class WorkerActor  extends AbstractActor {
 
 
     private final void onExtractMsg(ExtractMsg msg) {
-        ExtractObject extractObject = msg.getExtractObject();
 
 
-            switch (extractObject.getModType()) {
+
+            switch (msg.getModType()) {
                 case VERTEX:
                     if (vertices != null && vertices.size()!=0) {
-                      String freeVar= extractObject.freeVar;
+                      String freeVar= msg.freeVar;
 
                            for(Map.Entry<String, HashMap<Long, Vertex>> vEntry:vertices.entrySet()){
                                HashMap<Long, Vertex> vTimeStore= vEntry.getValue();

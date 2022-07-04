@@ -5,9 +5,7 @@ import akka.actor.ActorSelection;
 import akka.actor.Props;
 import akka.event.Logging;
 import akka.event.LoggingAdapter;
-import shared.messages.GraphAction.GraphActionsMsg;
 import shared.messages.GraphAction.InstallPatternMsg;
-import shared.messages.vertexcentric.InstallComputationMsg;
 import shared.messages.StartMsg;
 import shared.messages.graphchanges.*;
 
@@ -40,7 +38,6 @@ public class ClientActor extends AbstractActor {
                 match(ChangeEdgeMsg.class,this::onChangeEdgeMsg).
                 match(ChangeVertexMsg.class, this::onChangeVertexMsg).
                 match(InstallPatternMsg.class, this::onInstallPatternMsg).
-                match(InstallComputationMsg.class, this::onInstallComputationMsg).
                 build();
     }
 
@@ -68,11 +65,6 @@ public class ClientActor extends AbstractActor {
         jobManager.tell(msg, self());
     }
 
-
-    public void onInstallComputationMsg(InstallComputationMsg msg){
-        log.info("ChangeVertexMsg at client");
-        jobManager.tell(msg, self());
-    }
 
 
 

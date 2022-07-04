@@ -700,7 +700,7 @@ public class WorkerActor  extends AbstractActor {
             switch (msg.getModType()) {
                 case VERTEX:
                     if (vertices != null && vertices.size()!=0) {
-                      String freeVar= msg.freeVar;
+                      String freeVar= msg.getFreeVar();
 
                            for(Map.Entry<String, HashMap<Long, Vertex>> vEntry:vertices.entrySet()){
                                HashMap<Long, Vertex> vTimeStore= vEntry.getValue();

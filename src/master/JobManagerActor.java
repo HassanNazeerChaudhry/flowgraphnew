@@ -112,30 +112,31 @@ public class JobManagerActor extends AbstractActorWithStash {
         graphActions=msg.getGraphActions();
         FollowByMsg gAction= new FollowByMsg();
 
+        //Iterate through all bundled messages and find the last followBy
         for (Map.Entry<String, GraphActions> e : graphActions.entrySet()) {
             if (e.getKey().startsWith("followedBy")) {
                  gAction=(FollowByMsg)e.getValue();
             }
         }
 
-        Integer lazyWindow=gAction.getTime();
+        //gets the time in the last followBy command and set the lazy evaluation window
+        lazyWindow=gAction.getTime();
 
 
-
-
+        getContext().become(receiveChangeState());
 
     }
 
 
 
 
-    private final void onInstallComputationMsg(InstallComputationMsg msg){
+   /* private final void onInstallComputationMsg(InstallComputationMsg msg){
         log.info(msg.toString());
         computation = (VertexCentricComputation) msg.getComputationSupplier().get();
         this.taskManagers.values().stream().forEach(taskManagers -> taskManagers.tell(msg, self()));
 
         getContext().become(receiveChangeState());
-    }
+    }*/
 
 
 
@@ -148,8 +149,9 @@ public class JobManagerActor extends AbstractActorWithStash {
    //TODO: find more better partitioning scheme, right now its just hashing
     private final void onChangeVertexMsg(ChangeVertexMsg msg) {
         log.info(msg.toString());
-        //look for the responsbile worker and forward the change vertex messages to it
 
+
+        //look for the responsbile worker and forward the change vertex messages to it
         switch( msg.getMsgType()) {
             case "Add": case "Update":
                 int responsibleWorker = Utils.computeResponsibleWorkerFor(msg.getName(), numWorkers);
@@ -157,7 +159,7 @@ public class JobManagerActor extends AbstractActorWithStash {
                 taskManager.forward(msg, getContext());
                 break;
             case "Del":
-                 taskManagers.values().forEach(tm -> tm.tell(msg, self()));
+                taskManagers.values().forEach(tm -> tm.tell(msg, self()));
                 break;
 
 
@@ -167,9 +169,15 @@ public class JobManagerActor extends AbstractActorWithStash {
         expectedReplies = taskManagers.size();
         receivedReplies = 0;
 
-        //start computation message to task manager
-        taskManagers.values().forEach(tm -> tm.tell(new StartComputationMsg(msg.timestamp()), self()));
-       getContext().become(iterativeComputationState());
+        //wait until the lazy window has expired
+        if(lazyWindow==0){
+            //start computation message to task manager
+            taskManagers.values().forEach(tm -> tm.tell(new StartComputationMsg(msg.timestamp()), self()));
+            getContext().become(iterativeComputationState());
+        }else{
+            lazyWindow--;
+        }
+
     }
 
     private final void onChangeEdgeMsg(ChangeEdgeMsg msg) {
@@ -184,8 +192,16 @@ public class JobManagerActor extends AbstractActorWithStash {
         //variables related to graph computation and iterative computation
         expectedReplies = taskManagers.size();
         receivedReplies = 0;
-        taskManagers.values().forEach(tm -> tm.tell(new StartComputationMsg(msg.timestamp()), self()));
-        getContext().become(iterativeComputationState());
+
+        //wait until the lazy window has expired
+        if(lazyWindow==0){
+            //start computation message to task manager
+            taskManagers.values().forEach(tm -> tm.tell(new StartComputationMsg(msg.timestamp()), self()));
+            getContext().become(iterativeComputationState());
+        }else{
+            lazyWindow--;
+        }
+
 
     }
 

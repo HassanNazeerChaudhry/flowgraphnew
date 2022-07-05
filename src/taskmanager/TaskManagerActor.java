@@ -5,10 +5,7 @@ import akka.event.Logging;
 import akka.event.LoggingAdapter;
 import shared.Utils;
 import shared.messages.*;
-import shared.messages.GraphAction.ExtractMsg;
-import shared.messages.GraphAction.GraphActionsMsg;
-import shared.messages.GraphAction.PartitionMsg;
-import shared.messages.GraphAction.SelectMsg;
+import shared.messages.GraphAction.*;
 import shared.messages.graphchanges.*;
 import shared.messages.vertexcentric.*;
 import shared.vertexcentric.InOutboxImpl;
@@ -82,11 +79,17 @@ public class TaskManagerActor  extends AbstractActor {
         return receiveBuilder().
                 match(ChangeVertexMsg.class, this::onChangeVertexMsg). //
                 match(ChangeEdgeMsg.class, this::onChangeEdgeMsg). //
+
+                match(GraphActionsMsg.class, this::onGraphActionMsg). //
                 match(InstallComputationMsg.class, this::onInstallComputationMsg). //
+
                 match(SelectMsg.class, this::onSelectMsg).
                 match(PartitionMsg.class, this::onPartitionMsg).
                 match(ExtractMsg.class, this::onExtractMsg).
-                match(GraphActionsMsg.class, this::onGraphAction).
+                match(StreamOperatorMsg.class, this::OnStreamOperatorMsg).
+                match(EvaluateMsg.class, this::onEvaluateMsg).
+                match(FollowByMsg.class, this::onFollowByMsg).
+
                 match(StartComputationMsg.class, this::onStartComputationMsg). //
                 match(ComputationMsg.class, this::onComputationMsg). //
                 match(ResultRequestMsg.class, this::onResultRequestMsg). //
@@ -95,7 +98,6 @@ public class TaskManagerActor  extends AbstractActor {
                 build();
 
     }
-
 
 
 
@@ -154,6 +156,13 @@ public class TaskManagerActor  extends AbstractActor {
 
 
 
+    private final void onGraphActionMsg(GraphActionsMsg msg){
+        log.info("Graphaction message in task manager");
+        jobManager.tell(msg, self());
+
+
+    }
+
     private final void onInstallComputationMsg(InstallComputationMsg msg){
         log.info(msg.toString());
         computation=(VertexCentricComputation) msg.getComputationSupplier().get();
@@ -166,20 +175,41 @@ public class TaskManagerActor  extends AbstractActor {
 
      private final void onSelectMsg(SelectMsg msg){
         log.info(msg.toString());
-        this.workers.values().stream().forEach(workers -> workers.tell(msg, self()));
+       // this.workers.values().stream().forEach(workers -> workers.tell(msg, self()));
+         jobManager.tell(new GraphActionsMsg(), self());
     }
 
 
     private final void onPartitionMsg(PartitionMsg msg){
         log.info(msg.toString());
-        this.workers.values().stream().forEach(workers -> workers.tell(msg, self()));
+        jobManager.tell(new GraphActionsMsg(), self());
+      //  this.workers.values().stream().forEach(workers -> workers.tell(msg, self()));
     }
 
     private final void onExtractMsg(ExtractMsg msg){
         log.info(msg.toString());
-        this.workers.values().stream().forEach(workers -> workers.tell(msg, self()));
+        jobManager.tell(new GraphActionsMsg(), self());
+        //this.workers.values().stream().forEach(workers -> workers.tell(msg, self()));
     }
 
+    private final void OnStreamOperatorMsg(StreamOperatorMsg msg){
+        log.info(msg.toString());
+        jobManager.tell(new GraphActionsMsg(), self());
+        //this.workers.values().stream().forEach(workers -> workers.tell(msg, self()));
+    }
+
+
+    private final void onEvaluateMsg(EvaluateMsg msg){
+        log.info(msg.toString());
+        jobManager.tell(new GraphActionsMsg(), self());
+        //this.workers.values().stream().forEach(workers -> workers.tell(msg, self()));
+    }
+
+    private final void onFollowByMsg(FollowByMsg msg){
+        log.info(msg.toString());
+        jobManager.tell(new GraphActionsMsg(), self());
+        //this.workers.values().stream().forEach(workers -> workers.tell(msg, self()));
+    }
 
 
     private final void onStartComputationMsg(StartComputationMsg msg) {
@@ -214,7 +244,7 @@ public class TaskManagerActor  extends AbstractActor {
     }
 
     private final void onFailedComputationMsg(FailedComputationMsg msg) {
-        log.info("Computation message in job manager");
+        log.info("Computation message in task manager");
         jobManager.tell(msg, self());
 
     }
@@ -251,9 +281,7 @@ public class TaskManagerActor  extends AbstractActor {
 
     }
 
-    private final void onGraphAction(GraphActionsMsg msg){
-        jobManager.tell(new GraphActionsMsg(), sender());
-    }
+
 
 
     /**

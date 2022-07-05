@@ -1,10 +1,12 @@
 package shared.messages.GraphAction;
 
+import shared.model.enumerators.GraphOps;
+
 import java.io.Serializable;
 
 public class FollowByMsg extends GraphActions implements Serializable {
     private int time;
-    private String type;
+    private GraphOps type;
 
 
     public FollowByMsg() {
@@ -12,10 +14,11 @@ public class FollowByMsg extends GraphActions implements Serializable {
 
     public FollowByMsg(int time) {
         this.time = time;
-        this.type="followedBy";
+        this.type= GraphOps.FOLLOWEDBY;
+
     }
 
-    public String getType() {
+    public GraphOps getType() {
         return type;
     }
 

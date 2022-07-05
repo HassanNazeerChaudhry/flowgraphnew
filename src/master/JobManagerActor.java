@@ -30,7 +30,10 @@ public class JobManagerActor extends AbstractActorWithStash {
 
     //variables for iterative computation
     private Map<Integer, InOutboxImpl> superstepMsgs = new HashMap<>();
-    private Map<String, GraphActions> graphActions= new HashMap<>();
+    private HashMap<String, GraphActions> graphActions = new HashMap<String, GraphActions>();
+    private String currentGraphActionKey;
+    Iterator hmIterator;
+
     private int receivedReplies = 0;
     private int expectedReplies = 0;
 
@@ -62,6 +65,13 @@ public class JobManagerActor extends AbstractActorWithStash {
 
     }
 
+    private final Receive graphActionState() {
+        return receiveBuilder(). //
+                match(GraphActionsMsg.class, this::onGraphActionMsg). //
+                match(ChangeGraphMsg.class, msg -> stash()). //
+                build();
+    }
+
     private final Receive iterativeComputationState() {
         return receiveBuilder(). //
                 match(ComputationMsg.class, this::onComputationMsg). //
@@ -78,12 +88,7 @@ public class JobManagerActor extends AbstractActorWithStash {
                 build();
     }
 
-    private final Receive graphActionState() {
-        return receiveBuilder(). //
-                match(GraphActionsMsg.class, this::onGraphActionMsg). //
-                match(ChangeGraphMsg.class, msg -> stash()). //
-                build();
-    }
+
 
 
 
@@ -91,6 +96,8 @@ public class JobManagerActor extends AbstractActorWithStash {
 
     public void onStartMessage(StartMsg msg){
         log.info("StartClientMsg at jobmanager");
+
+
         for (final ActorRef taskManager : taskManagers.values()) {
             final TaskManagerInitMsg initMsg = new TaskManagerInitMsg(taskManagers, numWorkers);
             taskManager.tell(initMsg, self());
@@ -110,7 +117,16 @@ public class JobManagerActor extends AbstractActorWithStash {
     private final void onInstallPatternMsg(InstallPatternMsg msg){
         log.info(msg.toString());
         graphActions=msg.getGraphActions();
+        hmIterator = graphActions.entrySet().iterator();
+
         FollowByMsg gAction= new FollowByMsg();
+
+        Optional<String> firstKey = graphActions.keySet().stream().findFirst();
+        if (firstKey.isPresent()) {
+            currentGraphActionKey = firstKey.get();
+        }
+
+
 
         //Iterate through all bundled messages and find the last followBy
         for (Map.Entry<String, GraphActions> e : graphActions.entrySet()) {
@@ -126,24 +142,6 @@ public class JobManagerActor extends AbstractActorWithStash {
         getContext().become(receiveChangeState());
 
     }
-
-
-
-
-   /* private final void onInstallComputationMsg(InstallComputationMsg msg){
-        log.info(msg.toString());
-        computation = (VertexCentricComputation) msg.getComputationSupplier().get();
-        this.taskManagers.values().stream().forEach(taskManagers -> taskManagers.tell(msg, self()));
-
-        getContext().become(receiveChangeState());
-    }*/
-
-
-
-
-
-
-
 
 
    //TODO: find more better partitioning scheme, right now its just hashing
@@ -172,8 +170,9 @@ public class JobManagerActor extends AbstractActorWithStash {
         //wait until the lazy window has expired
         if(lazyWindow==0){
             //start computation message to task manager
-            taskManagers.values().forEach(tm -> tm.tell(new StartComputationMsg(msg.timestamp()), self()));
-            getContext().become(iterativeComputationState());
+            //taskManagers.values().forEach(tm -> tm.tell(new StartComputationMsg(msg.timestamp()), self()));
+            taskManagers.values().forEach(tm -> tm.tell(new GraphActionsMsg(), self()));
+            getContext().become(graphActionState());
         }else{
             lazyWindow--;
         }
@@ -196,13 +195,34 @@ public class JobManagerActor extends AbstractActorWithStash {
         //wait until the lazy window has expired
         if(lazyWindow==0){
             //start computation message to task manager
-            taskManagers.values().forEach(tm -> tm.tell(new StartComputationMsg(msg.timestamp()), self()));
-            getContext().become(iterativeComputationState());
+           // taskManagers.values().forEach(tm -> tm.tell(new StartComputationMsg(msg.timestamp()), self()));
+            taskManagers.values().forEach(tm -> tm.tell(new GraphActionsMsg(), self()));
+            getContext().become(graphActionState());
         }else{
             lazyWindow--;
         }
 
 
+    }
+
+    private final void onGraphActionMsg(GraphActionsMsg msg){
+        log.info(msg.toString());
+
+
+        if (hmIterator.hasNext()) {
+
+            Map.Entry mapElement
+                    = (Map.Entry)hmIterator.next();
+            GraphActions graphItem =(GraphActions) mapElement.getValue();
+            String elementKey =(String)mapElement.getKey();
+            taskManagers.values().forEach(tm -> tm.tell(graphItem, self()));
+
+        }
+
+
+/*
+        getContext().become(receiveChangeState());
+        unstashAll();*/
     }
 
 
@@ -295,41 +315,7 @@ public class JobManagerActor extends AbstractActorWithStash {
     }
 
 
-    private final void onGraphActionMsg(GraphActionsMsg msg){
-        log.info(msg.toString());
 
-        for(Map.Entry<String, GraphActions> graphItem:graphActions.entrySet()){
-
-            String key=graphItem.getKey();
-
-
-            switch(graphItem.getKey()) {
-                case "Sel":
-                    this.taskManagers.values().stream().forEach(taskManagers -> taskManagers.tell(graphItem.getValue(), self()));
-                    break;
-
-                case "Part":
-                    this.taskManagers.values().stream().forEach(taskManagers -> taskManagers.tell(graphItem.getValue(), self()));
-                    break;
-
-                case "Extract":
-                    this.taskManagers.values().stream().forEach(taskManagers -> taskManagers.tell(graphItem.getValue(), self()));
-                    break;
-
-
-
-
-                default:
-                    // code block
-            }
-
-
-        }
-
-
-        getContext().become(receiveChangeState());
-        unstashAll();
-    }
 
 
 

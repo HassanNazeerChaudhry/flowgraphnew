@@ -75,9 +75,9 @@ public class Client {
 
 
         //sending compuation traingle counting
-        final InstallComputationMsg<NamesSet, HashSet<HashSet<String>>> compMsg1 = new InstallComputationMsg<>("TraingleCounting",
+      /*  final InstallComputationMsg<NamesSet, HashSet<HashSet<String>>> compMsg1 = new InstallComputationMsg<>("TraingleCounting",
                 () -> new TraingleCounting());
-        graphActions.put("compute1",compMsg1);
+        graphActions.put("compute1",compMsg1);*/
 
 
         //sending select operation

@@ -13,12 +13,18 @@ public class InstallComputationMsg<MsgType extends Serializable, OutputType exte
 
     private final String name;
     private final SerializableSupplier<VertexCentricComputation<MsgType, OutputType>> computationSupplier;
+    private String type;
 
     public InstallComputationMsg(String name,
                                  SerializableSupplier<VertexCentricComputation<MsgType, OutputType>> computationSupplier) {
         super();
         this.name = name;
         this.computationSupplier = computationSupplier;
+        this.type="compute";
+    }
+
+    public String getType() {
+        return type;
     }
 
     public final String getName() {

@@ -6,13 +6,13 @@ import java.util.Map;
 
 public class InstallPatternMsg implements Serializable {
 
-    private Map<String, GraphActions> graphActions= new HashMap<>();
+    private HashMap<String, GraphActions> graphActions= new HashMap<>();
 
-    public InstallPatternMsg(Map<String, GraphActions> graphActions) {
+    public InstallPatternMsg(HashMap<String, GraphActions> graphActions) {
         this.graphActions = graphActions;
     }
 
-    public Map<String, GraphActions> getGraphActions() {
+    public HashMap<String, GraphActions> getGraphActions() {
         return graphActions;
     }
 }

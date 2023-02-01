@@ -5,9 +5,7 @@ import akka.actor.Props;
 import akka.event.Logging;
 import akka.event.LoggingAdapter;
 import shared.graph.*;
-import shared.messages.GraphAction.ExtractMsg;
-import shared.messages.GraphAction.PartitionMsg;
-import shared.messages.GraphAction.SelectMsg;
+import shared.messages.GraphAction.*;
 import shared.messages.graphchanges.*;
 import shared.messages.vertexcentric.*;
 import shared.model.enumerators.Modifier;
@@ -66,6 +64,8 @@ public class WorkerActor  extends AbstractActor {
                 match(SelectMsg.class, this::onSelectMsg).
                 match(PartitionMsg.class, this::onPartitionMsg).
                 match(ExtractMsg.class, this::onExtractMsg).
+                match(StreamOperatorMsg.class, this::onStreamOperatorMsg).
+                match(EvaluateMsg.class, this::onEvaluateMsg).
                 match(StartComputationMsg.class, this::onStartComputationMsg). //
                 match(ComputationMsg.class, this::onComputationMsg). //
                 match(ResultRequestMsg.class, this::onResultRequestMsg). //
@@ -602,18 +602,7 @@ public class WorkerActor  extends AbstractActor {
 
                 }
 
-
-
-
-
-        for(Map.Entry<String, Set<Edge>> entryEdge:selEdges.entrySet()){
-          Set<Edge> entrySetEdge=entryEdge.getValue();
-
-          for(Edge edgeSetEdge:entrySetEdge){
-              log.info(edgeSetEdge.toString());
-          }
-
-        }
+        sender().tell(new GraphActionsMsg(), self());
 
     }
 
@@ -687,7 +676,7 @@ public class WorkerActor  extends AbstractActor {
 
 
 
-
+        sender().tell(new GraphActionsMsg(), self());
 
     }
 
@@ -745,8 +734,26 @@ public class WorkerActor  extends AbstractActor {
                     }
             }
 
+        sender().tell(new GraphActionsMsg(), self());
 
     }
+
+    private final void onStreamOperatorMsg(StreamOperatorMsg msg) {
+
+
+
+
+        sender().tell(new GraphActionsMsg(), self());
+    }
+
+    private final void onEvaluateMsg(EvaluateMsg msg) {
+
+
+
+
+        sender().tell(new GraphActionsMsg(), self());
+    }
+
 
 
 

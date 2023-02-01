@@ -160,7 +160,6 @@ public class TaskManagerActor  extends AbstractActor {
         log.info("Graphaction message in task manager");
         jobManager.tell(msg, self());
 
-
     }
 
     private final void onInstallComputationMsg(InstallComputationMsg msg){
@@ -175,35 +174,34 @@ public class TaskManagerActor  extends AbstractActor {
 
      private final void onSelectMsg(SelectMsg msg){
         log.info(msg.toString());
-       // this.workers.values().stream().forEach(workers -> workers.tell(msg, self()));
-         jobManager.tell(new GraphActionsMsg(), self());
+        this.workers.values().stream().forEach(workers -> workers.tell(msg, self()));
+
     }
 
 
     private final void onPartitionMsg(PartitionMsg msg){
         log.info(msg.toString());
-        jobManager.tell(new GraphActionsMsg(), self());
-      //  this.workers.values().stream().forEach(workers -> workers.tell(msg, self()));
+        this.workers.values().stream().forEach(workers -> workers.tell(msg, self()));
     }
 
     private final void onExtractMsg(ExtractMsg msg){
         log.info(msg.toString());
-        jobManager.tell(new GraphActionsMsg(), self());
-        //this.workers.values().stream().forEach(workers -> workers.tell(msg, self()));
+        this.workers.values().stream().forEach(workers -> workers.tell(msg, self()));
     }
 
     private final void OnStreamOperatorMsg(StreamOperatorMsg msg){
         log.info(msg.toString());
-        jobManager.tell(new GraphActionsMsg(), self());
-        //this.workers.values().stream().forEach(workers -> workers.tell(msg, self()));
+        this.workers.values().stream().forEach(workers -> workers.tell(msg, self()));
     }
 
 
     private final void onEvaluateMsg(EvaluateMsg msg){
         log.info(msg.toString());
-        jobManager.tell(new GraphActionsMsg(), self());
-        //this.workers.values().stream().forEach(workers -> workers.tell(msg, self()));
+        this.workers.values().stream().forEach(workers -> workers.tell(msg, self()));
     }
+
+
+
 
     private final void onFollowByMsg(FollowByMsg msg){
         log.info(msg.toString());

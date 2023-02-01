@@ -1,5 +1,6 @@
 package shared.messages.vertexcentric;
 
+import shared.messages.GraphAction.GraphActions;
 import shared.vertexcentric.Inbox;
 import shared.vertexcentric.MsgSenderPair;
 
@@ -7,7 +8,7 @@ import java.io.Serializable;
 import java.util.List;
 import java.util.Set;
 
-public class ComputationMsg<MsgType extends Serializable> implements Serializable {
+public class ComputationMsg<MsgType extends Serializable> extends GraphActions implements Serializable {
     private static final long serialVersionUID = -3771118939226472136L;
 
     private final Inbox<MsgType> content;

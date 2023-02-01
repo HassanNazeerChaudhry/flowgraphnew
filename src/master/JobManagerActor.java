@@ -10,6 +10,7 @@ import shared.messages.*;
 import shared.messages.GraphAction.*;
 import shared.messages.graphchanges.*;
 import shared.messages.vertexcentric.*;
+import shared.optimizer.PatternOptimizer;
 import shared.vertexcentric.*;
 
 
@@ -23,14 +24,15 @@ public class JobManagerActor extends AbstractActorWithStash {
     //list of task managers and workers
     private final NavigableMap<Integer, ActorRef> taskManagers = new TreeMap<>();
     private int numWorkers = 0;
-    private int lazyWindow; // duration till which evaluate is not started
-
+    private int coldStartPeriod; // duration till which evaluate is not started
+    private PatternOptimizer pOpt=new PatternOptimizer();
     //computation to be performed
     private VertexCentricComputation computation = null;
 
     //variables for iterative computation
     private Map<Integer, InOutboxImpl> superstepMsgs = new HashMap<>();
     private HashMap<String, GraphActions> graphActions = new HashMap<String, GraphActions>();
+    private HashMap<String, GraphActions> graphActionsLight = new HashMap<String, GraphActions>();
     private String currentGraphActionKey;
     Iterator hmIterator;
 
@@ -90,13 +92,9 @@ public class JobManagerActor extends AbstractActorWithStash {
 
 
 
-
-
-
-
     public void onStartMessage(StartMsg msg){
         log.info("StartClientMsg at jobmanager");
-
+        coldStartPeriod=1;
 
         for (final ActorRef taskManager : taskManagers.values()) {
             final TaskManagerInitMsg initMsg = new TaskManagerInitMsg(taskManagers, numWorkers);
@@ -117,9 +115,48 @@ public class JobManagerActor extends AbstractActorWithStash {
     private final void onInstallPatternMsg(InstallPatternMsg msg){
         log.info(msg.toString());
         graphActions=msg.getGraphActions();
-        hmIterator = graphActions.entrySet().iterator();
 
-        FollowByMsg gAction= new FollowByMsg();
+        //Code for the pattern optimizer
+       pOpt.extractComputes(msg);
+
+
+
+        //find which is lightest computation in the collection
+        InstallComputationMsg computeMsg= new InstallComputationMsg();
+        int currentComputationCoeff=0;
+
+         String currentKey;
+
+         //Finds which is the light computation in the given pattern
+        for (Map.Entry<String, GraphActions> e : graphActions.entrySet()) {
+
+            if (e.getKey().startsWith("compute")) {
+                computeMsg=(InstallComputationMsg)e.getValue();
+                if(computeMsg.getComputationCoeff()>currentComputationCoeff)
+                    currentComputationCoeff=computeMsg.getComputationCoeff();
+                    currentKey=e.getKey();
+            }
+        }
+
+
+        //get entire clause for light computation
+        for (Map.Entry<String, GraphActions> e : graphActions.entrySet()) {
+
+            if (e.getKey().endsWith(String.valueOf(currentComputationCoeff))){
+                graphActionsLight.put(e.getKey(),e.getValue());
+            }
+        }
+
+        
+
+       hmIterator = graphActionsLight.entrySet().iterator();
+
+
+
+
+
+
+       /* FollowByMsg gAction= new FollowByMsg();
 
         Optional<String> firstKey = graphActions.keySet().stream().findFirst();
         if (firstKey.isPresent()) {
@@ -129,14 +166,14 @@ public class JobManagerActor extends AbstractActorWithStash {
 
 
         //Iterate through all bundled messages and find the last followBy
-        for (Map.Entry<String, GraphActions> e : graphActions.entrySet()) {
+       for (Map.Entry<String, GraphActions> e : graphActions.entrySet()) {
             if (e.getKey().startsWith("followedBy")) {
                  gAction=(FollowByMsg)e.getValue();
             }
         }
 
         //gets the time in the last followBy command and set the lazy evaluation window
-        lazyWindow=gAction.getTime();
+        lazyWindow=gAction.getTime();*/
 
 
         getContext().become(receiveChangeState());
@@ -168,13 +205,13 @@ public class JobManagerActor extends AbstractActorWithStash {
         receivedReplies = 0;
 
         //wait until the lazy window has expired
-        if(lazyWindow==0){
+        if(coldStartPeriod==0){
             //start computation message to task manager
             //taskManagers.values().forEach(tm -> tm.tell(new StartComputationMsg(msg.timestamp()), self()));
             taskManagers.values().forEach(tm -> tm.tell(new GraphActionsMsg(), self()));
             getContext().become(graphActionState());
         }else{
-            lazyWindow--;
+            coldStartPeriod--;
         }
 
     }
@@ -193,13 +230,13 @@ public class JobManagerActor extends AbstractActorWithStash {
         receivedReplies = 0;
 
         //wait until the lazy window has expired
-        if(lazyWindow==0){
+        if(coldStartPeriod==0){
             //start computation message to task manager
            // taskManagers.values().forEach(tm -> tm.tell(new StartComputationMsg(msg.timestamp()), self()));
             taskManagers.values().forEach(tm -> tm.tell(new GraphActionsMsg(), self()));
             getContext().become(graphActionState());
         }else{
-            lazyWindow--;
+            coldStartPeriod--;
         }
 
 
@@ -217,12 +254,13 @@ public class JobManagerActor extends AbstractActorWithStash {
             String elementKey =(String)mapElement.getKey();
             taskManagers.values().forEach(tm -> tm.tell(graphItem, self()));
 
+        }else{
+            getContext().become(receiveChangeState());
+            unstashAll();
         }
 
 
-/*
-        getContext().become(receiveChangeState());
-        unstashAll();*/
+
     }
 
 

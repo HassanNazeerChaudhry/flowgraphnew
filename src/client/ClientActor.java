@@ -44,7 +44,8 @@ public class ClientActor extends AbstractActor {
 
 
     public void OnClientStartMessage(StartMsg msg){
-        log.info("StartClientMsg at client");
+        log.info("" +
+                "StartClientMsg at client");
         jobManager.tell(msg, self());
     }
 

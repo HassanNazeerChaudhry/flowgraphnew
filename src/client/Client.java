@@ -11,6 +11,7 @@ import org.antlr.v4.runtime.tree.ParseTree;
 import shared.antlr4.pattern.PatternParser;
 import shared.antlr4.visitor.PatternEntryVisitor;
 
+import shared.computations.MaxIncomingEdges;
 import shared.computations.NamesSet;
 import shared.computations.TraingleCounting;
 
@@ -75,9 +76,9 @@ public class Client {
 
 
         //sending compuation traingle counting
-      /*  final InstallComputationMsg<NamesSet, HashSet<HashSet<String>>> compMsg1 = new InstallComputationMsg<>("TraingleCounting",
-                () -> new TraingleCounting());
-        graphActions.put("compute1",compMsg1);*/
+       final InstallComputationMsg<NamesSet, HashSet<HashSet<String>>> compMsg1 = new InstallComputationMsg<>("TraingleCounting",
+                () -> new TraingleCounting(),1);
+        graphActions.put("compute1",compMsg1);
 
 
         //sending select operation
@@ -110,8 +111,8 @@ public class Client {
 
 
         //sending compuation traingle counting
-        final InstallComputationMsg<NamesSet, HashSet<HashSet<String>>> compMsg2 = new InstallComputationMsg<>("TraingleCounting",
-                () -> new TraingleCounting());
+        final InstallComputationMsg<Integer, Integer> compMsg2 = new InstallComputationMsg<>("MaxIncomingEdges",
+                () -> new MaxIncomingEdges(),2);
         graphActions.put("compute2",compMsg2);
 
 
@@ -128,6 +129,7 @@ public class Client {
         //sending extraction operation
         ExtractMsg extractObject2=new ExtractMsg("country", Modifier.VERTEX);
         graphActions.put("extract2",extractObject2);
+
 
         //Streaming operation
         StreamOperatorMsg streamOperatorObject2=new StreamOperatorMsg(StreamOps.AVG, "age");
@@ -188,9 +190,5 @@ public class Client {
 
 
     }
-
-
-
-
 
 }

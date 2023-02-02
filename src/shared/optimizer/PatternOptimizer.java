@@ -48,8 +48,9 @@ public class PatternOptimizer {
 
     public void shufflePattern(ArrayList<GraphActions> graphActionList, HashMap<String, GraphActions> fullList){
 
-        HashMap<String, GraphActions> shuffleList1=(HashMap<String, GraphActions>)fullList.clone();
-        HashMap<String, GraphActions> shuffleList2=(HashMap<String, GraphActions>)fullList.clone();
+        HashMap<String, GraphActions> shuffleListFinal=(HashMap<String, GraphActions>)fullList.clone();
+        HashMap<String, GraphActions> shuffleListTemp=(HashMap<String, GraphActions>)fullList.clone();
+
 
 
         ArrayList<String> clauseKeys = new ArrayList<String>(){{
@@ -62,24 +63,9 @@ public class PatternOptimizer {
             add( "evaluate");
         }};
 
-        //two pattern weights assigne
-//        List<String> keys1 = new ArrayList<>();
-//        List<String> keys2 = new ArrayList<>();
-//
-//        String var1="1";
-//        String var2="2";
-//
-//        for(int i=0; i<=6;i++){
-//            keys1.add(clauseKeys.get(i)+ var2);
-//            keys2.add(clauseKeys.get(i)+ var1);
-//
-//        }
 
+        
         Map<String, List<String>> listKeys = new HashMap<>();
-//        for(int i=0;i<graphActionList.size();i++){
-//            String name="keys"+i;
-//            listKeys.put(name, new ArrayList<String>());
-//        }
 
         for(int j=0;j<graphActionList.size();j++){
             String name="keys"+j;
@@ -94,19 +80,6 @@ public class PatternOptimizer {
         }
 
 
-
-
-
-
-        if(graphActionList.size()==2){
-            if(isOptimizableTwo( graphActionList)){
-
-                shuffleList1.keySet().retainAll(keys1);
-                shuffleList1.put("followedBy1", fullList.get("followedBy1"));
-                shuffleList2.keySet().retainAll(keys2);
-                shuffleList1.putAll(shuffleList2);
-            }
-        }
 
         ArrayList<GraphActions> graphActionListTest=new ArrayList<GraphActions>();
 
@@ -123,77 +96,21 @@ public class PatternOptimizer {
         final InstallComputationMsg<Integer, Integer> compMsg3 = new InstallComputationMsg<>("MaxIncomingEdges",
                 () -> new MaxIncomingEdges(),2);
         graphActionListTest.add(compMsg3);
+        int [] shuffleWeights=isOptimizableN(graphActionListTest);
 
+        shuffleListFinal.keySet().retainAll(listKeys.get("keys1"));
 
+        for(int j=0;j<graphActionList.size()-1;j++){
+            shuffleListFinal.put("followedBy1", fullList.get("followedBy1"));
+            shuffleListTemp.keySet().retainAll(listKeys.get("keys0"));
+            shuffleListFinal.putAll(shuffleListTemp);
+        }
 
-        Integer [] shuffleWeights=isOptimizableN(graphActionListTest);
 
     }
 
 
-    public boolean isOptimizableTwo(ArrayList<GraphActions> graphActionList) {
-
-
-        InstallComputationMsg g1= (InstallComputationMsg)graphActionList.get(0);
-        InstallComputationMsg g2= (InstallComputationMsg)graphActionList.get(1);
-
-        //Heavy	Light
-        //Light  Heavy
-        if(g1.getComputationCoeff()<g2.getComputationCoeff()){
-            isShuffle=true;
-
-        }
-        else{
-
-            isShuffle=false;
-        }
-        return isShuffle;
-
-
-    }
-
-    public ArrayList<Integer> isOptimizableThree(ArrayList<GraphActions> graphActionList) {
-
-        ArrayList<Integer> shiftPattern = new ArrayList<Integer>();
-
-
-
-
-        InstallComputationMsg g1= (InstallComputationMsg)graphActionList.get(0);
-        InstallComputationMsg g2= (InstallComputationMsg)graphActionList.get(1);
-        InstallComputationMsg g3= (InstallComputationMsg)graphActionList.get(1);
-
-
-        if(g1.getComputationCoeff()==g2.getComputationCoeff() || g1.getComputationCoeff()>g2.getComputationCoeff()){
-           if(g2.getComputationCoeff()<g3.getComputationCoeff()) {
-               shiftPattern.add(1);
-               shiftPattern.add(3);
-               shiftPattern.add(2);
-           }else{
-               shiftPattern.add(1);
-               shiftPattern.add(2);
-               shiftPattern.add(3);
-           }
-        }else {
-            if(g2.getComputationCoeff()>g3.getComputationCoeff()) {
-                shiftPattern.add(2);
-                shiftPattern.add(3);
-                shiftPattern.add(1);
-            }else{
-                shiftPattern.add(1);
-                shiftPattern.add(3);
-                shiftPattern.add(2);
-
-            }
-
-
-
-        }
-     return shiftPattern;
-
-    }
-
-    public Integer []  isOptimizableN(ArrayList<GraphActions> graphActionList) {
+    public int []  isOptimizableN(ArrayList<GraphActions> graphActionList) {
 
         InstallComputationMsg[ ] installComputationsList = new InstallComputationMsg[graphActionList.size()];
         Integer [] weights=new Integer[graphActionList.size()];
@@ -210,7 +127,7 @@ public class PatternOptimizer {
                 .mapToInt(ele -> ele).toArray();
 
 
-        return weights;
+        return sortedIndices;
 
 
     }

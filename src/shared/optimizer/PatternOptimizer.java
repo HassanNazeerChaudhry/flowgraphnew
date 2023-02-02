@@ -64,7 +64,7 @@ public class PatternOptimizer {
         }};
 
 
-        
+
         Map<String, List<String>> listKeys = new HashMap<>();
 
         for(int j=0;j<graphActionList.size();j++){
@@ -81,28 +81,32 @@ public class PatternOptimizer {
 
 
 
-        ArrayList<GraphActions> graphActionListTest=new ArrayList<GraphActions>();
+//        ArrayList<GraphActions> graphActionListTest=new ArrayList<GraphActions>();
+//
+//
+//        final InstallComputationMsg<NamesSet, HashSet<HashSet<String>>> compMsg1 = new InstallComputationMsg<>("TraingleCounting",
+//                () -> new TraingleCounting(),1);
+//        graphActionListTest.add(compMsg1);
+//
+//        final InstallComputationMsg<NamesSet, HashSet<HashSet<String>>> compMsg2 = new InstallComputationMsg<>("TraingleCounting",
+//                () -> new TraingleCounting(),1);
+//        graphActionListTest.add(compMsg2);
+//
+//
+//        final InstallComputationMsg<Integer, Integer> compMsg3 = new InstallComputationMsg<>("MaxIncomingEdges",
+//                () -> new MaxIncomingEdges(),2);
+//        graphActionListTest.add(compMsg3);
 
 
-        final InstallComputationMsg<NamesSet, HashSet<HashSet<String>>> compMsg1 = new InstallComputationMsg<>("TraingleCounting",
-                () -> new TraingleCounting(),1);
-        graphActionListTest.add(compMsg1);
+        int [] shuffleWeights=isOptimizableN(graphActionList);
+        String strKeySeq="keys"+shuffleWeights[0];
 
-        final InstallComputationMsg<NamesSet, HashSet<HashSet<String>>> compMsg2 = new InstallComputationMsg<>("TraingleCounting",
-                () -> new TraingleCounting(),1);
-        graphActionListTest.add(compMsg2);
-
-
-        final InstallComputationMsg<Integer, Integer> compMsg3 = new InstallComputationMsg<>("MaxIncomingEdges",
-                () -> new MaxIncomingEdges(),2);
-        graphActionListTest.add(compMsg3);
-        int [] shuffleWeights=isOptimizableN(graphActionListTest);
-
-        shuffleListFinal.keySet().retainAll(listKeys.get("keys1"));
+        shuffleListFinal.keySet().retainAll(listKeys.get(strKeySeq));
 
         for(int j=0;j<graphActionList.size()-1;j++){
             shuffleListFinal.put("followedBy1", fullList.get("followedBy1"));
-            shuffleListTemp.keySet().retainAll(listKeys.get("keys0"));
+
+            shuffleListTemp.keySet().retainAll(listKeys.get("keys"+shuffleWeights[j+1]));
             shuffleListFinal.putAll(shuffleListTemp);
         }
 

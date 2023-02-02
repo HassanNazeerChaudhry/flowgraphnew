@@ -115,6 +115,9 @@ public class Client {
                 () -> new MaxIncomingEdges(),2);
         graphActions.put("compute2",compMsg2);
 
+//        final InstallComputationMsg<NamesSet, HashSet<HashSet<String>>> compMsg2 = new InstallComputationMsg<>("TraingleCounting",
+//                () -> new TraingleCounting(),1);
+//        graphActions.put("compute2",compMsg2);
 
 
         //sending select operation
@@ -139,6 +142,41 @@ public class Client {
         // evaluate operator operation
         EvaluateMsg evaluateObject2=new EvaluateMsg(Operator.GREATEREQUAL,30);
         graphActions.put("evaluate2",evaluateObject2);
+
+
+//        FollowByMsg followedByObject2=new FollowByMsg(7);
+//        graphActions.put("followedBy2",followedByObject2);
+//
+//
+//        //sending compuation traingle counting
+//        final InstallComputationMsg<Integer, Integer> compMsg3 = new InstallComputationMsg<>("MaxIncomingEdges",
+//                () -> new MaxIncomingEdges(),2);
+//        graphActions.put("compute3",compMsg3);
+//
+//
+//
+//        //sending select operation
+//        SelectMsg selectObject3=new SelectMsg(Modifier.VERTEX,"age", Operator.GREATER,"18", ConjugationType.NULL);
+//        graphActions.put("select3",selectObject3);
+//
+//
+//        //sending partitioning operation
+//        PartitionMsg partitioningObject3=new PartitionMsg("country", Modifier.VERTEX);
+//        graphActions.put("partitioning3",partitioningObject3);
+//
+//        //sending extraction operation
+//        ExtractMsg extractObject3=new ExtractMsg("country", Modifier.VERTEX);
+//        graphActions.put("extract3",extractObject3);
+//
+//
+//        //Streaming operation
+//        StreamOperatorMsg streamOperatorObject3=new StreamOperatorMsg(StreamOps.AVG, "age");
+//        graphActions.put("streamOP3",streamOperatorObject3);
+//
+//
+//        // evaluate operator operation
+//        EvaluateMsg evaluateObject3=new EvaluateMsg(Operator.GREATEREQUAL,30);
+//        graphActions.put("evaluate3",evaluateObject3);
 
 
         clientActor.tell(new InstallPatternMsg(graphActions), ActorRef.noSender());

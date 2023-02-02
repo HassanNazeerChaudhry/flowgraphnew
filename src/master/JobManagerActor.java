@@ -120,6 +120,12 @@ public class JobManagerActor extends AbstractActorWithStash {
        pOpt.extractComputes(msg);
 
 
+       //flag to check if it is shuffled or not
+
+
+
+
+
 
         //find which is lightest computation in the collection
         InstallComputationMsg computeMsg= new InstallComputationMsg();

@@ -18,6 +18,7 @@ import java.util.stream.IntStream;
 public class PatternOptimizer {
     private HashMap<String, GraphActions> graphActions;
     private ArrayList<GraphActions> aryList= new ArrayList<>();
+    HashMap<String, GraphActions> shuffleListFinal;
     private boolean isShuffle;
 
     public PatternOptimizer() {
@@ -29,6 +30,8 @@ public class PatternOptimizer {
     public void extractComputes(InstallPatternMsg Pattern){
         graphActions=Pattern.getGraphActions();
 
+
+        //gets the compute caluses
         for (Map.Entry<String, GraphActions> e : graphActions.entrySet()) {
 
            if(e.getKey().toString().contains("compute")){
@@ -40,16 +43,16 @@ public class PatternOptimizer {
         }
 
 
-        shufflePattern(aryList, graphActions);
+        shuffleListFinal=shufflePattern(aryList, graphActions);
 
 
     }
 
 
-    public void shufflePattern(ArrayList<GraphActions> graphActionList, HashMap<String, GraphActions> fullList){
+    public HashMap<String, GraphActions> shufflePattern(ArrayList<GraphActions> graphActionList, HashMap<String, GraphActions> fullList){
 
-        HashMap<String, GraphActions> shuffleListFinal=(HashMap<String, GraphActions>)fullList.clone();
-        HashMap<String, GraphActions> shuffleListTemp=(HashMap<String, GraphActions>)fullList.clone();
+        shuffleListFinal=(HashMap<String, GraphActions>)fullList.clone();
+        HashMap<String, GraphActions> shuffleListTemp;
 
 
 
@@ -73,7 +76,11 @@ public class PatternOptimizer {
 
             for(int i=0; i<=6;i++){
                     String var=(j+1)+"";
-                    key.add(clauseKeys.get(i)+ var);
+                    if(fullList.containsKey(clauseKeys.get(i)+ var)){
+
+                        key.add(clauseKeys.get(i)+ var);
+                    }
+
                 }
 
             listKeys.put(name,key);
@@ -81,36 +88,21 @@ public class PatternOptimizer {
 
 
 
-//        ArrayList<GraphActions> graphActionListTest=new ArrayList<GraphActions>();
-//
-//
-//        final InstallComputationMsg<NamesSet, HashSet<HashSet<String>>> compMsg1 = new InstallComputationMsg<>("TraingleCounting",
-//                () -> new TraingleCounting(),1);
-//        graphActionListTest.add(compMsg1);
-//
-//        final InstallComputationMsg<NamesSet, HashSet<HashSet<String>>> compMsg2 = new InstallComputationMsg<>("TraingleCounting",
-//                () -> new TraingleCounting(),1);
-//        graphActionListTest.add(compMsg2);
-//
-//
-//        final InstallComputationMsg<Integer, Integer> compMsg3 = new InstallComputationMsg<>("MaxIncomingEdges",
-//                () -> new MaxIncomingEdges(),2);
-//        graphActionListTest.add(compMsg3);
-
-
         int [] shuffleWeights=isOptimizableN(graphActionList);
         String strKeySeq="keys"+shuffleWeights[0];
 
         shuffleListFinal.keySet().retainAll(listKeys.get(strKeySeq));
-
+        String followStr;
         for(int j=0;j<graphActionList.size()-1;j++){
-            shuffleListFinal.put("followedBy1", fullList.get("followedBy1"));
+            shuffleListTemp=(HashMap<String, GraphActions>)fullList.clone();
+            followStr="followedBy"+Integer.toString(j+1);
+            shuffleListFinal.put(followStr, fullList.get(followStr));
 
             shuffleListTemp.keySet().retainAll(listKeys.get("keys"+shuffleWeights[j+1]));
             shuffleListFinal.putAll(shuffleListTemp);
         }
 
-
+       return shuffleListFinal;
     }
 
 
